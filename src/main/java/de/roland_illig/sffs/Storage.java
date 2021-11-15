@@ -3,7 +3,7 @@ package de.roland_illig.sffs;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
-public class Storage {
+class Storage implements AutoCloseable {
 
     private final RandomAccessFile file;
 
@@ -36,5 +36,10 @@ public class Storage {
         } catch (IOException e) {
             throw new RuntimeIOException(e);
         }
+    }
+
+    @Override
+    public void close() throws IOException {
+        file.close();
     }
 }
