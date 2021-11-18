@@ -11,31 +11,19 @@ class Storage implements AutoCloseable {
         this.file = file;
     }
 
-    public int readIntAt(long pos) {
-        try {
-            file.seek(pos);
-            return file.readInt();
-        } catch (IOException e) {
-            throw new RuntimeIOException(e);
-        }
+    public int readIntAt(long pos) throws IOException {
+        file.seek(pos);
+        return file.readInt();
     }
 
-    public long readLongAt(long pos) {
-        try {
-            file.seek(pos);
-            return file.readLong();
-        } catch (IOException e) {
-            throw new RuntimeIOException(e);
-        }
+    public long readLongAt(long pos) throws IOException {
+        file.seek(pos);
+        return file.readLong();
     }
 
-    public void readFully(long pos, byte[] buf, int bufOffset, int bufLength) {
-        try {
-            file.seek(pos);
-            file.readFully(buf, bufOffset, bufLength);
-        } catch (IOException e) {
-            throw new RuntimeIOException(e);
-        }
+    public void readFully(long pos, byte[] buf, int bufOffset, int bufLength) throws IOException {
+        file.seek(pos);
+        file.readFully(buf, bufOffset, bufLength);
     }
 
     @Override
