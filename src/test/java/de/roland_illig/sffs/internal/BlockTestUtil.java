@@ -3,8 +3,10 @@ package de.roland_illig.sffs.internal;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -22,5 +24,13 @@ class BlockTestUtil {
             }
         }
         assertThat(actual).containsExactly(expected);
+    }
+
+    static void dump(File f, String... rows) throws IOException {
+        try (var fos = new FileOutputStream(f)) {
+            try (var bos = new BufferedOutputStream(fos)) {
+                for (var row : rows) bos.write(SffsTestUtil.fromHexdump(row));
+            }
+        }
     }
 }
