@@ -21,4 +21,8 @@ class Directory {
         }
         wr.writePadding();
     }
+
+    void mkdir(String name) {
+        throw new UnsupportedOperationException();
+    }
 }
