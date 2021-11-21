@@ -14,20 +14,20 @@ or may be dynamically resizeable (regular file in another filesystem).
 The storage layer provides access to individual bytes, as well as larger integer values.
 
 Larger integer values may be saved in big endian or little endian, as determined by the magic bytes of the superblock.
-The prototyp implementation only handles big endian.
+The prototype implementation only handles big endian.
 
 ## Allocation layer
 
-The allocation layer divides the linear storage into blocks of size 16.
+The allocation layer divides the linear storage into blocks whose size is a multiple of 16 bytes.
 
 Each block has the following on-disk structure:
 
 ~~~text
-offset      type       content
-0000_0000   U32        type
-0000_0004   U32        size of the block data
-0000_0008   U8[size]   data
-8 + size    U8[...]    zero padding to the next multiple of 16
+  offset   type       content
+       0   U32        type
+       4   U32        size of the block data
+       8   U8[size]   data
+8 + size   U8[...]    zero padding to the next multiple of 16
 ~~~
 
 The first two fields form the `BlockHeader`.
@@ -39,11 +39,11 @@ The data of allocated blocks is not touched by the allocation layer.
 A free block has the following on-disk structure:
 
 ~~~text
-offset      type   content
-0000_0000   U32    magic "SFfr"
-0000_0004   U32    size of the block data
-0000_0008   U64    block index of the next free block in the chain
-0000_0010   any    undefined
+offset   type   content
+     0   U32    magic "SFfr"
+     4   U32    size of the block data
+     8   U64    block index of the next free block in the chain
+    16   any    undefined
 ~~~
 
 After a block has been freed, its data may or may not be reset to 0.
@@ -54,7 +54,7 @@ Preserving the previously stored values is faster, especially for large files. I
 the previous data. Since the magic value "SFfr" overwrites the previous magic value, the most helpful field is not
 available when trying to restore accidentally deleted files.
 
-Providing an eternal storage or unlimited undeletion is out of the scope of this filesystem. For this usage,
+Providing an eternal storage or unlimited undeletion is out of the scope of sffs1. For this usage,
 [Git](https://git-scm.com/) may be a more appropriate tool.
 
 ## Block layer
@@ -69,10 +69,10 @@ Block 0 is the superblock, which contains basic information about the filesystem
 structure:
 
 ~~~text 
-offset
-0000_0000   BlockHeader   magic "SF01"
-0000_0008   BlockRef      root directory
-0000_0010   BlockRef      first free block
+offset   type          content
+     0   BlockHeader   magic "SF01"
+     8   BlockRef      root directory
+    16   BlockRef      first free block
 ~~~
 
 Since no other block needs to refer to the superblock, the block number 0 means an absent block, for example in lists of
@@ -100,14 +100,14 @@ The filesystem does not prevent the use of
 A directory maps names to filesystem objects. It has the following on-disk structure:
 
 ~~~text
-offset
-0000_0000   BlockHeader   magic "SFde"
-0000_0008   BlockRef      parent directory
-0000_0010   BlockRef      name0
-0000_0018   BlockRef      object0
-0000_0020   BlockRef      name1
-0000_0020   BlockRef      object1
-...
+offset   type          content
+     0   BlockHeader   magic "SFde"
+     8   BlockRef      parent directory
+    16   BlockRef      name0
+    24   BlockRef      object0
+    32   BlockRef      name1
+    40   BlockRef      object1
+   ...
 ~~~
 
 The object of the directory entry may refer to a regular file or to another directory.
@@ -124,9 +124,9 @@ Future directions:
 A regular file is a sequence of bytes. It has the following on-disk structure:
 
 ~~~text
-offset
-0000_0000   BlockHeader   magic "SFre"
-0000_0008   byte[size]    file content
+offset   type          content
+     0   BlockHeader   magic "SFre"
+     8   byte[size]    file content
 ~~~
 
 Out of scope:
