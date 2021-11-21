@@ -15,12 +15,12 @@ class Block {
     }
 
     final int getType() throws IOException {
-        if (type == 0) type = storage.readIntAt(offset);
+        if (type == 0) type = storage.readInt(offset);
         return type;
     }
 
     final int getSize() throws IOException {
-        if (size == 0) size = storage.readIntAt(offset + 4);
+        if (size == 0) size = storage.readInt(offset + 4);
         return size;
     }
 

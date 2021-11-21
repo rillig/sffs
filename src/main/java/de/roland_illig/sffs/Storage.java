@@ -11,12 +11,12 @@ class Storage implements AutoCloseable {
         this.file = file;
     }
 
-    int readIntAt(long pos) throws IOException {
+    int readInt(long pos) throws IOException {
         file.seek(pos);
         return file.readInt();
     }
 
-    long readLongAt(long pos) throws IOException {
+    long readLong(long pos) throws IOException {
         file.seek(pos);
         return file.readLong();
     }
