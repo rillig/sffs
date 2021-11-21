@@ -158,6 +158,12 @@ Out of scope:
 
 # Reference implementation
 
+## Terminology
+
+* `offset` is measured in bytes
+* `ref` is a block reference, measured in units of 16 bytes
+* `pos` is an index into a block's data section
+
 ## Quality of implementation
 
 * each API operation must be handled atomically
