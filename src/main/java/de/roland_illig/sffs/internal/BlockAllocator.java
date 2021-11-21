@@ -12,6 +12,8 @@ class BlockAllocator {
     }
 
     Name allocName(String name) throws IOException {
+        Name.check(name);
+
         var bytes = name.getBytes(StandardCharsets.UTF_8);
         var block = allocator.alloc(BlockType.NAME, bytes.length);
         block.write(0, bytes, 0, bytes.length);
