@@ -3,7 +3,7 @@ package de.roland_illig.sffs.internal;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-class BlockAllocator {
+final class BlockAllocator {
 
     private final Allocator allocator;
 

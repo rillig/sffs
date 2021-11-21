@@ -2,7 +2,7 @@ package de.roland_illig.sffs.internal;
 
 import java.io.IOException;
 
-class StorageWriter {
+final class StorageWriter {
 
     private final Storage storage;
     private long pos;

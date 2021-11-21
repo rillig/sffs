@@ -2,7 +2,7 @@ package de.roland_illig.sffs.internal;
 
 import java.io.IOException;
 
-class Directory {
+final class Directory {
 
     final Block block;
 

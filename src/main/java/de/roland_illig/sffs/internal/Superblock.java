@@ -2,7 +2,7 @@ package de.roland_illig.sffs.internal;
 
 import java.io.IOException;
 
-class Superblock {
+final class Superblock {
 
     private final Block block;
 
@@ -10,7 +10,7 @@ class Superblock {
         this.block = block;
     }
 
-    public static void init(StorageWriter wr, long rootDirectory, long firstFree) throws IOException {
+    static void init(StorageWriter wr, long rootDirectory, long firstFree) throws IOException {
         wr.writeInt(BlockType.SUPER.getMagic());
         wr.writeInt(16);
         wr.writeLong(rootDirectory);

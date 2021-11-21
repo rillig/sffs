@@ -6,11 +6,11 @@ import java.nio.charset.StandardCharsets;
 /**
  * The name of a directory entry.
  */
-class Name {
+final class Name {
 
     private final Block block;
 
-    public Name(Block block) {
+    Name(Block block) {
         this.block = block;
     }
 

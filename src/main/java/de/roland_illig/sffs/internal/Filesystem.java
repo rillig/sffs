@@ -6,43 +6,43 @@ import java.io.RandomAccessFile;
 import java.nio.file.Path;
 import java.util.stream.Stream;
 
-public class Filesystem implements AutoCloseable {
+final class Filesystem implements AutoCloseable {
 
     private final Storage storage;
 
     /**
      * @see RandomAccessFile#RandomAccessFile(File, String)
      */
-    public Filesystem(File f, String mode) throws IOException {
+    Filesystem(File f, String mode) throws IOException {
         this.storage = new Storage(new RandomAccessFile(f, mode));
     }
 
-    public void mkdir(Path dir) {
+    void mkdir(Path dir) {
         var parent = locateDir(dir.getParent());
         parent.mkdir(dir.getFileName().toString());
     }
 
-    public void rmdir(Path dir) {
+    void rmdir(Path dir) {
         throw new UnsupportedOperationException();
     }
 
-    public Stream<DirectoryEntry> readdir(Path dir) {
+    Stream<DirectoryEntry> readdir(Path dir) {
         throw new UnsupportedOperationException();
     }
 
-    public void rename(Path path, String newName) {
+    void rename(Path path, String newName) {
         throw new UnsupportedOperationException();
     }
 
-    public void move(Path oldPath, Path newPath) {
+    void move(Path oldPath, Path newPath) {
         throw new UnsupportedOperationException();
     }
 
-    public void delete(Path file) {
+    void delete(Path file) {
         throw new UnsupportedOperationException();
     }
 
-    public RegularFile open(Path file) {
+    RegularFile open(Path file) {
         throw new UnsupportedOperationException();
     }
 

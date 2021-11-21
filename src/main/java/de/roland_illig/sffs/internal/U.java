@@ -3,7 +3,8 @@ package de.roland_illig.sffs.internal;
 /**
  * Arithmetics on unsigned integers.
  */
-class U {
+final class U {
+
     static int plus(int a, int b) {
         return a + b;
     }

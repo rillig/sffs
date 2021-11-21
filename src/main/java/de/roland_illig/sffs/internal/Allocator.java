@@ -2,7 +2,7 @@ package de.roland_illig.sffs.internal;
 
 import java.io.IOException;
 
-class Allocator {
+final class Allocator {
 
     private final Storage storage;
 

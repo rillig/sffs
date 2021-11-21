@@ -2,7 +2,8 @@ package de.roland_illig.sffs.internal;
 
 import java.io.IOException;
 
-class Block {
+final class Block {
+
     private final Storage storage;
     private final long offset;
 
@@ -18,17 +19,17 @@ class Block {
         this(block.storage, offset);
     }
 
-    final int getType() throws IOException {
+    int getType() throws IOException {
         if (type == 0) type = storage.readInt(offset);
         return type;
     }
 
-    final int getSize() throws IOException {
+    int getSize() throws IOException {
         if (size == 0) size = storage.readInt(offset + 4);
         return size;
     }
 
-    final void readFully(int pos, byte[] buf, int bufOffset, int bufLength) throws IOException {
+    void readFully(int pos, byte[] buf, int bufOffset, int bufLength) throws IOException {
         SffsUtil.require(bufLength >= 0);
         SffsUtil.require(U.le(pos, getSize()));
         SffsUtil.require(U.le(pos + bufLength, getSize()));

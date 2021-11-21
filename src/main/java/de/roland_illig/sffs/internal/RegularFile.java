@@ -1,24 +1,24 @@
 package de.roland_illig.sffs.internal;
 
-public class RegularFile {
+final class RegularFile {
 
-    public int read(byte[] buf, int offset, int length) {
+    int read(byte[] buf, int offset, int length) {
         throw new UnsupportedOperationException();
     }
 
-    public void write(byte[] buf, int offset, int length) {
+    void write(byte[] buf, int offset, int length) {
         throw new UnsupportedOperationException();
     }
 
-    public void close() {
+    void close() {
         throw new UnsupportedOperationException();
     }
 
-    public long tell() {
+    long tell() {
         throw new UnsupportedOperationException();
     }
 
-    public void seek(long offset) {
+    void seek(long offset) {
         throw new UnsupportedOperationException();
     }
 }

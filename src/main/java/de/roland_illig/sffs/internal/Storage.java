@@ -11,7 +11,7 @@ import java.io.RandomAccessFile;
  *
  * @see StorageWriter
  */
-class Storage implements AutoCloseable {
+final class Storage implements AutoCloseable {
 
     private final RandomAccessFile file;
 
