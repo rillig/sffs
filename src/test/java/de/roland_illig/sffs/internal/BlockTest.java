@@ -1,6 +1,5 @@
-package de.roland_illig.sffs;
+package de.roland_illig.sffs.internal;
 
-import static de.roland_illig.sffs.SffsTestUtil.hex;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
@@ -22,8 +21,8 @@ class BlockTest {
             var buf = new byte[32];
             block.readFully(0, buf, 0, 4);
 
-            assertThat(hex(buf, 0, 4)).isEqualTo("38394142");
-            assertThat(hex(buf, 4, 4)).isEqualTo("00000000");
+            assertThat(SffsTestUtil.hex(buf, 0, 4)).isEqualTo("38394142");
+            assertThat(SffsTestUtil.hex(buf, 4, 4)).isEqualTo("00000000");
         }
     }
 }

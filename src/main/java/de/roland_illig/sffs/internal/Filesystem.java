@@ -1,4 +1,4 @@
-package de.roland_illig.sffs;
+package de.roland_illig.sffs.internal;
 
 import java.nio.file.Path;
 import java.util.stream.Stream;

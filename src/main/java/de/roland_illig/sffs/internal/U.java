@@ -1,4 +1,4 @@
-package de.roland_illig.sffs;
+package de.roland_illig.sffs.internal;
 
 /**
  * Arithmetics on unsigned integers.

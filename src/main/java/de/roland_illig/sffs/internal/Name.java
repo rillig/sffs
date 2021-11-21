@@ -1,4 +1,4 @@
-package de.roland_illig.sffs;
+package de.roland_illig.sffs.internal;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
