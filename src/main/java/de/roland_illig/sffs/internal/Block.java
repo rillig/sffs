@@ -14,6 +14,10 @@ class Block {
         this.offset = offset;
     }
 
+    Block(Block block, long offset) {
+        this(block.storage, offset);
+    }
+
     final int getType() throws IOException {
         if (type == 0) type = storage.readInt(offset);
         return type;
