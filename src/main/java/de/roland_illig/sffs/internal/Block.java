@@ -15,10 +15,6 @@ final class Block {
         this.offset = offset;
     }
 
-    Block(Block block, long offset) {
-        this(block.storage, offset);
-    }
-
     int getType() throws IOException {
         if (type == 0) type = storage.readInt(offset);
         return type;
