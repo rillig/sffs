@@ -34,7 +34,7 @@ final class Block {
         SffsUtil.require(U.le(pos, getSize()));
         SffsUtil.require(U.le(pos + bufLength, getSize()));
 
-        storage.readFully(U.plus(this.offset + 8, pos), buf, bufOffset, bufLength);
+        storage.readFully(offset(pos), buf, bufOffset, bufLength);
     }
 
     long readBlockOffset(int pos) throws IOException {
