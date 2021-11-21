@@ -12,8 +12,8 @@ class BlockTypeTest {
      */
     @Test
     void super_magic() {
-        int magic = BlockType.SUPER.getMagic();
-        int swapped = Integer.reverseBytes(magic);
+        var magic = BlockType.SUPER.getMagic();
+        var swapped = Integer.reverseBytes(magic);
 
         assertThat(magic).isNotEqualTo(swapped);
     }
