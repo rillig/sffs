@@ -31,4 +31,16 @@ class Block {
 
         storage.readFully(U.plus(this.offset + 8, pos), buf, bufOffset, bufLength);
     }
+
+    long readBlockOffset(int pos) throws IOException {
+        return storage.readLong(pos);
+    }
+
+    void write(int pos, byte[] buf, int bufOffset, int bufLength) throws IOException {
+        storage.write(U.plus(this.offset + 8, pos), buf, bufOffset, bufLength);
+    }
+
+    void writeBlockRef(int pos, Block block) throws IOException {
+        storage.writeLong(U.plus(this.offset + 8, pos), block.offset / 16);
+    }
 }
