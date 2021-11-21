@@ -37,7 +37,7 @@ final class Block {
         storage.readFully(offset(pos), buf, bufOffset, bufLength);
     }
 
-    long readBlockOffset(int pos) throws IOException {
+    long readRef(int pos) throws IOException {
         return storage.readLong(pos);
     }
 
@@ -55,6 +55,10 @@ final class Block {
 
     void writeLong(int pos, int v) throws IOException {
         storage.writeLong(offset(pos), v);
+    }
+
+    Block ref(long ref) {
+        return new Block(storage, 16 * ref);
     }
 
     private long offset(int pos) {

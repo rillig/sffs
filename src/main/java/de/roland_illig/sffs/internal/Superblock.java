@@ -23,7 +23,7 @@ final class Superblock {
     }
 
     Directory getRootDirectory() throws IOException {
-        var offset = block.readBlockOffset(0);
-        return new Directory(new Block(block, offset));
+        var ref = block.readRef(0);
+        return new Directory(block.ref(ref));
     }
 }
