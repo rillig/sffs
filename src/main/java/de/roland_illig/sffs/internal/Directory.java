@@ -11,7 +11,7 @@ class Directory {
     }
 
     static void init(StorageWriter wr) throws IOException {
-        int entries = 16;
+        int entries = 4;
         wr.writeInt(BlockType.DIRECTORY.getMagic());
         wr.writeInt(8 + 16 * entries);
         wr.writeLong(0); // parent
@@ -19,5 +19,6 @@ class Directory {
             wr.writeLong(0); // name
             wr.writeLong(0); // object
         }
+        wr.writePadding();
     }
 }

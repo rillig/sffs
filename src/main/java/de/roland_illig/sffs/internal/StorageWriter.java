@@ -21,4 +21,14 @@ class StorageWriter {
         storage.writeLong(pos, v);
         pos += 8;
     }
+
+    void write(byte[] b, int off, int len) throws IOException {
+        storage.write(pos, b, off, len);
+        pos += len;
+    }
+
+    void writePadding() throws IOException {
+        var col = (int) (pos & 0x0F);
+        if (col != 0) write(new byte[16], 0, 16 - col);
+    }
 }

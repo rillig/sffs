@@ -15,6 +15,7 @@ class Superblock {
         wr.writeInt(16);
         wr.writeLong(1); // root directory
         wr.writeLong(0); // first free block
+        wr.writePadding();
     }
 
     void setRootDirectory(Directory dir) throws IOException {
