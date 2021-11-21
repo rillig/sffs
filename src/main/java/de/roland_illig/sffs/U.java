@@ -12,11 +12,11 @@ class U {
         return a + extend(b);
     }
 
-    private static long extend(int a) {
-        return (long) a & 0xFFFF_FFFFL;
+    static boolean le(int a, int b) {
+        return Integer.compareUnsigned(a, b) <= 0;
     }
 
-    static boolean le(int a, int b) {
-        return (a ^ 0x8000_0000) <= (b ^ 0x8000_0000);
+    private static long extend(int a) {
+        return (long) a & 0xFFFF_FFFFL;
     }
 }
