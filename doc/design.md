@@ -81,7 +81,12 @@ directory entries.
 ### Name
 
 A directory in a filesystem is a mapping from names to filesystem objects. A name is a sequence of Unicode code points,
-encoded as UTF-8. The code points U+0000 "Null", U+002F "Solidus", U+005C "Reverse solidus" must not occur in a name.
+encoded as UTF-8.
+
+Limitations:
+
+* The code points U+0000 "Null", U+002F "Solidus", U+005C "Reverse solidus" must not occur in a name.
+* The name must neither be `.` (dot) nor `..` ([dot-dot](https://9p.io/sys/doc/lexnames.html)).
 
 The filesystem is case-sensitive.
 
