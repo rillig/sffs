@@ -1,5 +1,7 @@
 package de.roland_illig.sffs.internal;
 
+import java.io.IOException;
+
 class Allocator {
 
     private final Storage storage;
@@ -8,15 +10,15 @@ class Allocator {
         this.storage = storage;
     }
 
-    Block alloc(BlockType type, int size) {
+    Block alloc(BlockType type, int size) throws IOException {
         throw new UnsupportedOperationException();
     }
 
-    void realloc(Block block, int size) {
+    void realloc(Block block, int size) throws IOException {
         throw new UnsupportedOperationException();
     }
 
-    void free(Block block) {
+    void free(Block block) throws IOException {
         throw new UnsupportedOperationException();
     }
 }

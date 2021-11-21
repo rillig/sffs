@@ -3,12 +3,21 @@ package de.roland_illig.sffs.internal;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
+/**
+ * Provides access to the underlying random access storage.
+ * <p>
+ * All "public" methods explicitly specify the position of the storage, to allow for multiple concurrent accesses
+ * from a single thread, such as when copying a file.
+ *
+ * @see StorageWriter
+ */
 class Storage implements AutoCloseable {
 
     private final RandomAccessFile file;
 
-    Storage(RandomAccessFile file) {
+    Storage(RandomAccessFile file) throws IOException {
         this.file = file;
+        if (file.length() == 0) init();
     }
 
     int readInt(long pos) throws IOException {
@@ -44,5 +53,11 @@ class Storage implements AutoCloseable {
     @Override
     public void close() throws IOException {
         file.close();
+    }
+
+    void init() throws IOException {
+        var wr = new StorageWriter(this, 0);
+        Superblock.init(wr, 1);
+        Directory.init(wr);
     }
 }

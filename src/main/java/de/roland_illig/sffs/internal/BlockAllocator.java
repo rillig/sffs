@@ -7,12 +7,8 @@ class BlockAllocator {
 
     private final Allocator allocator;
 
-    BlockAllocator(Allocator allocator) {this.allocator = allocator;
-    }
-
-    Superblock allocSuperblock() {
-        var block = allocator.alloc(BlockType.SUPER, Superblock.SIZE);
-        return new Superblock(block);
+    BlockAllocator(Allocator allocator) {
+        this.allocator = allocator;
     }
 
     Name allocName(String name) throws IOException {

@@ -4,12 +4,17 @@ import java.io.IOException;
 
 class Superblock {
 
-    static int SIZE = 16;
-
     private final Block block;
 
     Superblock(Block block) {
         this.block = block;
+    }
+
+    public static void init(StorageWriter wr, long rootDirectory) throws IOException {
+        wr.writeInt(BlockType.SUPER.getMagic());
+        wr.writeInt(16);
+        wr.writeLong(1); // root directory
+        wr.writeLong(0); // first free block
     }
 
     void setRootDirectory(Directory dir) throws IOException {

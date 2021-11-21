@@ -1,7 +1,6 @@
 package de.roland_illig.sffs.internal;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import org.junit.jupiter.api.AfterEach;
@@ -16,7 +15,7 @@ class BlockAllocatorTest {
     private BlockAllocator testee;
 
     @BeforeEach
-    void setUp(@TempDir File tmpdir) throws FileNotFoundException {
+    void setUp(@TempDir File tmpdir) throws IOException {
         var f = new File(tmpdir, "storage");
         var raf = new RandomAccessFile(f, "rw");
         storage = new Storage(raf);
@@ -26,12 +25,6 @@ class BlockAllocatorTest {
     @AfterEach
     void tearDown() throws IOException {
         storage.close();
-    }
-
-    @Test
-    @Disabled("not yet implemented")
-    void allocSuper() {
-        var block = testee.allocSuperblock();
     }
 
     @Test

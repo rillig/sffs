@@ -41,10 +41,22 @@ class Block {
     }
 
     void write(int pos, byte[] buf, int bufOffset, int bufLength) throws IOException {
-        storage.write(U.plus(this.offset + 8, pos), buf, bufOffset, bufLength);
+        storage.write(offset(pos), buf, bufOffset, bufLength);
     }
 
     void writeBlockRef(int pos, Block block) throws IOException {
-        storage.writeLong(U.plus(this.offset + 8, pos), block.offset / 16);
+        storage.writeLong(offset(pos), block != null ? block.offset / 16 : 0);
+    }
+
+    void writeInt(int pos, int v) throws IOException {
+        storage.writeInt(offset(pos), v);
+    }
+
+    void writeLong(int pos, int v) throws IOException {
+        storage.writeLong(offset(pos), v);
+    }
+
+    private long offset(int pos) {
+        return U.plus(offset + 8, pos);
     }
 }
