@@ -26,6 +26,21 @@ class Storage implements AutoCloseable {
         file.readFully(buf, bufOffset, bufLength);
     }
 
+    void write(long pos, byte[] buf, int bufOffset, int bufLength) throws IOException {
+        file.seek(pos);
+        file.write(buf, bufOffset, bufLength);
+    }
+
+    void writeInt(long pos, int v) throws IOException {
+        file.seek(pos);
+        file.writeInt(v);
+    }
+
+    void writeLong(long pos, long v) throws IOException {
+        file.seek(pos);
+        file.writeLong(v);
+    }
+
     @Override
     public void close() throws IOException {
         file.close();
