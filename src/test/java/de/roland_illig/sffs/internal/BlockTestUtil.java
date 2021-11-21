@@ -12,7 +12,7 @@ import java.util.ArrayList;
 
 class BlockTestUtil {
 
-    static void assertDumpEquals(File f, String... expected) throws IOException {
+    static void assertDumpEquals(File f, String... expectedHexRows) throws IOException {
         var actual = new ArrayList<String>();
         try (var fis = new FileInputStream(f)) {
             var bis = new BufferedInputStream(fis);
@@ -23,13 +23,13 @@ class BlockTestUtil {
                 actual.add(SffsTestUtil.hexdump(bytes));
             }
         }
-        assertThat(actual).containsExactly(expected);
+        assertThat(actual).containsExactly(expectedHexRows);
     }
 
-    static void dump(File f, String... rows) throws IOException {
+    static void dump(File f, String... hexRows) throws IOException {
         try (var fos = new FileOutputStream(f)) {
             try (var bos = new BufferedOutputStream(fos)) {
-                for (var row : rows) bos.write(SffsTestUtil.fromHexdump(row));
+                for (var row : hexRows) bos.write(SffsTestUtil.fromHexdump(row));
             }
         }
     }
