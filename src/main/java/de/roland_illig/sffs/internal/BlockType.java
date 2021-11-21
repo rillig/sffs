@@ -1,7 +1,7 @@
 package de.roland_illig.sffs.internal;
 
 enum BlockType {
-    SUPER("SFsu"),
+    SUPER("SF01"),
     DIRECTORY("SFdi"),
     DIRECTORY_ENTRY("SFde"),
     REGULAR("SFre"),
