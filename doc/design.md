@@ -110,7 +110,11 @@ offset   type          content
    ...
 ~~~
 
-The object of the directory entry may refer to a regular file or to another directory.
+The root directory has itself as the parent.
+
+The directories form a tree, that is, there are no loops.
+
+The object of each directory entry may refer to a regular file or to another directory.
 
 In a freshly allocated directory block, all names and objects point to 0.
 
