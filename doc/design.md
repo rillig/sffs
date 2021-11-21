@@ -134,3 +134,28 @@ Out of scope:
 * sffs1 does not support file permissions.
 * sffs1 does not support file attributes.
 * sffs1 does not support alternate data streams.
+
+# Possible design extensions
+
+* symlinks
+* sockets
+* device nodes
+* large file support (>= 4 GB)
+* access control (owner, groups, permissions, ACLs)
+* encryption
+* compression
+* alternate data streams
+    * precomputed file hashes
+    * precompressed data, [for use in web servers](https://httpd.apache.org/docs/2.4/mod/mod_brotli.html#precompressed)
+
+# Reference implementation
+
+## Future directions
+
+### Tools
+
+* defrag
+* fsck
+* compact
+* canonicalize (for digital signatures or [reproducible builds](https://reproducible-builds.org/))
+* check for steganography (unused bits, non-canonical content)
