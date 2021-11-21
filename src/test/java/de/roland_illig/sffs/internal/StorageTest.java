@@ -16,7 +16,7 @@ class StorageTest {
         var storage = new Storage(raf);
         storage.close();
 
-        BlockTestUtil.assertDumpEquals(f,
+        SffsTestUtil.assertDumpEquals(f,
                 // superblock
                 "53 46 30 31 00 00 00 10  00 00 00 00 00 00 00 01",
                 "00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00",

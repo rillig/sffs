@@ -13,7 +13,7 @@ class BlockTest {
     @Test
     void readFully(@TempDir File tmpdir) throws IOException {
         var f = new File(tmpdir, "storage");
-        BlockTestUtil.dump(f,
+        SffsTestUtil.dump(f,
                 // superblock
                 "53 46 30 31 00 00 00 10  00 00 00 00 00 00 00 04",
                 "00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00",
