@@ -153,10 +153,14 @@ Out of scope:
 * encryption
 * compression
 * alternate data streams
-    * precomputed file hashes
-    * precompressed data, [for use in web servers](https://httpd.apache.org/docs/2.4/mod/mod_brotli.html#precompressed)
+  * precomputed file hashes
+  * precompressed data, [for use in web servers](https://httpd.apache.org/docs/2.4/mod/mod_brotli.html#precompressed)
 
 # Reference implementation
+
+## Quality of implementation
+
+* each API operation must be handled atomically
 
 ## Future directions
 
