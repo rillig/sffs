@@ -13,7 +13,7 @@ enum BlockType {
     private final int magic;
 
     BlockType(String magic) {
-        this.magic = magic(magic);
+        this.magic = toMagic(magic);
     }
 
     static BlockType byMagic(int magic) throws IOException {
@@ -23,7 +23,7 @@ enum BlockType {
         throw new IOException(String.format("Invalid magic number 0x%08x", magic));
     }
 
-    private int magic(String magic) {
+    private static int toMagic(String magic) {
         assert magic.length() == 4;
         return magic.charAt(0) << 24 | magic.charAt(1) << 16 | magic.charAt(2) << 8 | magic.charAt(3);
     }
