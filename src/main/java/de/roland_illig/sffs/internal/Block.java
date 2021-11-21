@@ -7,7 +7,6 @@ final class Block {
     private final Storage storage;
     private final long offset;
 
-    private int type;
     private int size;
 
     Block(Storage storage, long offset) {
@@ -16,8 +15,7 @@ final class Block {
     }
 
     int getType() throws IOException {
-        if (type == 0) type = storage.readInt(offset);
-        return type;
+        return storage.readInt(offset);
     }
 
     int getSize() throws IOException {
