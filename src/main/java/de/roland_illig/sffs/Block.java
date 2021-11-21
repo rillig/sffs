@@ -26,9 +26,9 @@ class Block {
 
     final void readFully(int pos, byte[] buf, int bufOffset, int bufLength) throws IOException {
         SffsUtil.require(bufLength >= 0);
-        SffsUtil.require(SffsUtil.ule(pos, getSize()));
-        SffsUtil.require(SffsUtil.ule(pos + bufLength, getSize()));
+        SffsUtil.require(U.le(pos, getSize()));
+        SffsUtil.require(U.le(pos + bufLength, getSize()));
 
-        storage.readFully(SffsUtil.uplus(this.offset + 8, pos), buf, bufOffset, bufLength);
+        storage.readFully(U.plus(this.offset + 8, pos), buf, bufOffset, bufLength);
     }
 }
