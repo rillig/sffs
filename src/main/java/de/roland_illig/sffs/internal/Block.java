@@ -9,13 +9,19 @@ final class Block {
 
     private int size;
 
-    Block(Storage storage, long offset) {
+    Block(Storage storage, long offset) throws IOException {
         this.storage = storage;
         this.offset = offset;
+
+        getType(); // verify that the magic number is known
     }
 
-    int getType() throws IOException {
-        return storage.readInt(offset);
+    long getRef() {
+        return offset / 16;
+    }
+
+    BlockType getType() throws IOException {
+        return BlockType.byMagic(storage.readInt(offset));
     }
 
     int getSize() throws IOException {
@@ -31,8 +37,12 @@ final class Block {
         storage.readFully(offset(pos), buf, bufOffset, bufLength);
     }
 
+    long readLong(int pos) throws IOException {
+        return storage.readLong(offset(pos));
+    }
+
     long readRef(int pos) throws IOException {
-        return storage.readLong(pos);
+        return readLong(pos);
     }
 
     void write(int pos, byte[] buf, int bufOffset, int bufLength) throws IOException {
@@ -47,15 +57,24 @@ final class Block {
         storage.writeInt(offset(pos), v);
     }
 
-    void writeLong(int pos, int v) throws IOException {
+    void writeLong(int pos, long v) throws IOException {
         storage.writeLong(offset(pos), v);
     }
 
-    Block ref(long ref) {
+    Block ref(long ref) throws IOException {
         return new Block(storage, 16 * ref);
     }
 
     private long offset(int pos) {
         return U.plus(offset + 8, pos);
+    }
+
+    Storage getStorage() {
+        return storage;
+    }
+
+    public Block checkType(BlockType type) throws IOException {
+        SffsUtil.require(type == getType());
+        return this;
     }
 }

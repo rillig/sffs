@@ -11,7 +11,7 @@ final class Allocator {
     }
 
     Block alloc(BlockType type, int size) throws IOException {
-        throw new UnsupportedOperationException();
+        return storage.createBlock(type, size);
     }
 
     void realloc(Block block, int size) throws IOException {

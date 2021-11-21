@@ -6,8 +6,8 @@ final class Superblock {
 
     private final Block block;
 
-    Superblock(Block block) {
-        this.block = block;
+    Superblock(Block block) throws IOException {
+        this.block = block.checkType(BlockType.SUPER);
     }
 
     static void init(StorageWriter wr, long rootDirectory, long firstFree) throws IOException {

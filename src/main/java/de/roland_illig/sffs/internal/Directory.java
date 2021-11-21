@@ -22,7 +22,33 @@ final class Directory {
         wr.writePadding();
     }
 
-    void mkdir(String name) {
-        throw new UnsupportedOperationException();
+    void mkdir(String name) throws IOException {
+        var rd = new BlockReader(block, 8); // skip the parent directory
+        while (rd.hasNext()) {
+            var nameRef = rd.readRef();
+            if (nameRef == 0) {
+                var nameBlock = block.getStorage().allocName(name);
+                var dirBlock = block.getStorage().allocDirectory(block.getRef());
+                block.writeBlockRef(rd.getPos() - 8, nameBlock.getBlock());
+                block.writeBlockRef(rd.getPos(), dirBlock.block);
+                return;
+            }
+            rd.readRef(); // skip the filesystem object
+        }
+        throw new UnsupportedOperationException("enlarging a directory");
+    }
+
+    public Directory lookupDir(String name) throws IOException {
+        var rd = new BlockReader(block, 8); // skip the parent directory
+        while (rd.hasNext()) {
+            var nameRef = rd.readRef();
+            var objRef = rd.readRef();
+            if (nameRef == 0)
+                continue;
+            var nameInDir = new Name(block.ref(nameRef)).get();
+            if (name.equals(nameInDir))
+                return new Directory(block.ref(objRef));
+        }
+        return null;
     }
 }

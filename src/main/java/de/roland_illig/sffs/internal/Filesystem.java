@@ -1,6 +1,7 @@
 package de.roland_illig.sffs.internal;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.file.Path;
@@ -17,8 +18,9 @@ final class Filesystem implements AutoCloseable {
         this.storage = new Storage(new RandomAccessFile(f, mode));
     }
 
-    void mkdir(Path dir) {
-        var parent = locateDir(dir.getParent());
+    void mkdir(Path dir) throws IOException {
+        var parent = lookupParent(dir);
+        if (parent == null) throw new FileNotFoundException(dir.getParent().toString());
         parent.mkdir(dir.getFileName().toString());
     }
 
@@ -50,7 +52,11 @@ final class Filesystem implements AutoCloseable {
         storage.close();
     }
 
-    private Directory locateDir(Path dir) {
-        throw new UnsupportedOperationException();
+    private Directory lookupParent(Path path) throws IOException {
+        var superblock = new Superblock(new Block(storage, 0));
+        var cwd = superblock.getRootDirectory();
+        for (int i = 0, n = path.getNameCount() - 1; cwd != null && i < n; i++)
+            cwd = cwd.lookupDir(path.getName(i).toString());
+        return cwd;
     }
 }

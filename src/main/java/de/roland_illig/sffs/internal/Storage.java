@@ -14,10 +14,12 @@ import java.io.RandomAccessFile;
 final class Storage implements AutoCloseable {
 
     private final RandomAccessFile file;
+    private final BlockAllocator blockAllocator;
 
     Storage(RandomAccessFile file) throws IOException {
         this.file = file;
         if (file.length() == 0) init();
+        this.blockAllocator = new BlockAllocator(new Allocator(this));
     }
 
     int readInt(long pos) throws IOException {
@@ -57,7 +59,24 @@ final class Storage implements AutoCloseable {
 
     void init() throws IOException {
         var wr = new StorageWriter(this, 0);
-        Superblock.init(wr, 1, 0);
+        Superblock.init(wr, 2, 0);
         Directory.init(wr);
+    }
+
+    Name allocName(String name) throws IOException {
+        return blockAllocator.allocName(name);
+    }
+
+    Directory allocDirectory(long parentRef) throws IOException {
+        return blockAllocator.allocDirectory(parentRef);
+    }
+
+    Block createBlock(BlockType type, int size) throws IOException {
+        var offset = file.length();
+        file.seek(offset);
+        file.writeInt(type.getMagic());
+        file.writeInt(size);
+        file.setLength(SffsUtil.blockEnd(offset, size));
+        return new Block(this, offset);
     }
 }
