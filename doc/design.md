@@ -140,6 +140,10 @@ Out of scope:
 * symlinks
 * sockets
 * device nodes
+* shared names that are not freed
+* copy-on-write constant files
+* redundancy (RAID)
+* fault tolerance (like [in QR codes](https://en.wikipedia.org/wiki/QR_code#Error_correction))
 * large file support (>= 4 GB)
 * access control (owner, groups, permissions, ACLs)
 * encryption
