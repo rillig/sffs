@@ -78,7 +78,7 @@ final class Directory {
             childDir.writeRef(0, large);
         }
 
-        var superblock = new Superblock(block.ref(0));
+        var superblock = new Superblock(block.getStorage());
         if (superblock.getRootDirectoryRef() == block.getRef()) {
             superblock.setRootDirectory(large);
             large.writeRef(0, large);

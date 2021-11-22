@@ -53,7 +53,7 @@ final class Filesystem implements AutoCloseable {
     }
 
     private Directory lookupParent(Path path) throws IOException {
-        var superblock = new Superblock(new Block(storage, 0));
+        var superblock = new Superblock(storage);
         var cwd = superblock.getRootDirectory();
         for (int i = 0, n = path.getNameCount() - 1; cwd != null && i < n; i++)
             cwd = cwd.lookupDir(path.getName(i).toString());
