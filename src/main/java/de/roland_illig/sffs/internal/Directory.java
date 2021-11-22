@@ -1,6 +1,8 @@
 package de.roland_illig.sffs.internal;
 
 import java.io.IOException;
+import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.Path;
 
 final class Directory {
 
@@ -22,20 +24,26 @@ final class Directory {
         wr.writePadding();
     }
 
-    void mkdir(String name) throws IOException {
+    void mkdir(Path dir) throws IOException {
+        var name = dir.getFileName().toString();
         var rd = new BlockReader(block, 8); // skip the parent directory
+        var firstEmpty = -1;
         while (rd.hasNext()) {
             var nameRef = rd.readRef();
-            if (nameRef == 0) {
-                var nameBlock = block.getStorage().allocName(name);
-                var dirBlock = block.getStorage().allocDirectory(block.getRef());
-                block.writeBlockRef(rd.getPos() - 8, nameBlock.getBlock());
-                block.writeBlockRef(rd.getPos(), dirBlock.block);
-                return;
-            }
+            if (nameRef == 0 && firstEmpty == -1)
+                firstEmpty = rd.getPos() - 8;
+            if (nameRef != 0 && new Name(block.ref(nameRef)).get().equals(name))
+                throw new FileAlreadyExistsException(dir.toString());
             rd.readRef(); // skip the filesystem object
         }
-        throw new UnsupportedOperationException("enlarging a directory");
+
+        if (firstEmpty == -1)
+            throw new UnsupportedOperationException("enlarging a directory");
+
+        var nameBlock = block.getStorage().allocName(name);
+        var dirBlock = block.getStorage().allocDirectory(block.getRef());
+        block.writeBlockRef(firstEmpty, nameBlock.getBlock());
+        block.writeBlockRef(firstEmpty + 8, dirBlock.block);
     }
 
     public Directory lookupDir(String name) throws IOException {

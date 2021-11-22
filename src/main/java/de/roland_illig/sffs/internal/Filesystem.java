@@ -21,7 +21,7 @@ final class Filesystem implements AutoCloseable {
     void mkdir(Path dir) throws IOException {
         var parent = lookupParent(dir);
         if (parent == null) throw new FileNotFoundException(dir.getParent().toString());
-        parent.mkdir(dir.getFileName().toString());
+        parent.mkdir(dir);
     }
 
     void rmdir(Path dir) {

@@ -2,7 +2,9 @@ package de.roland_illig.sffs.internal;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Path;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -64,7 +66,9 @@ class FilesystemTest {
 
         try (var fs = new Filesystem(f, "rw")) {
             fs.mkdir(Path.of("Downloads"));
-            fs.mkdir(Path.of("Downloads"));
+            Assertions.assertThatThrownBy(() -> fs.mkdir(Path.of("Downloads")))
+                    .isExactlyInstanceOf(FileAlreadyExistsException.class)
+                    .hasMessage("Downloads");
         }
 
         SffsTestUtil.assertDumpEquals(f,
@@ -74,24 +78,12 @@ class FilesystemTest {
                 // root directory
                 "53 46 64 69 00 00 00 48  00 00 00 00 00 00 00 02",
                 "00 00 00 00 00 00 00 07  00 00 00 00 00 00 00 09",
-                // FIXME: Do not create this directory entry
-                "00 00 00 00 00 00 00 0E  00 00 00 00 00 00 00 10",
+                "00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00",
                 "00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00",
                 "00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00",
                 // name "Downloads"
                 "53 46 6E 6D 00 00 00 09  44 6F 77 6E 6C 6F 61 64",
                 "73 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00",
-                // directory "Downloads"
-                "53 46 64 69 00 00 00 48  00 00 00 00 00 00 00 02",
-                "00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00",
-                "00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00",
-                "00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00",
-                "00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00",
-                // FIXME: Do not create this name
-                // name "Downloads"
-                "53 46 6E 6D 00 00 00 09  44 6F 77 6E 6C 6F 61 64",
-                "73 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00",
-                // FIXME: Do not create this directory
                 // directory "Downloads"
                 "53 46 64 69 00 00 00 48  00 00 00 00 00 00 00 02",
                 "00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00",
