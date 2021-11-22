@@ -53,8 +53,8 @@ final class Directory {
 
         var nameBlock = block.getStorage().allocateName(name);
         var dirBlock = block.getStorage().allocateDirectory(4, block.getRef());
-        block.writeBlockRef(firstEmpty, nameBlock.getBlock());
-        block.writeBlockRef(firstEmpty + 8, dirBlock.block);
+        block.writeRef(firstEmpty, nameBlock.getBlock());
+        block.writeRef(firstEmpty + 8, dirBlock.block);
     }
 
     Directory lookupDir(String name) throws IOException {
@@ -81,12 +81,12 @@ final class Directory {
         var parentDir = new Directory(block.ref(getParentRef()));
         for (var pos = 8; pos < parentDir.block.getSize(); pos += 16) {
             if (parentDir.block.readRef(pos + 8) == block.getRef())
-                parentDir.block.writeBlockRef(pos + 8, large.block);
+                parentDir.block.writeRef(pos + 8, large.block);
         }
 
         for (var pos = 8; pos < block.getSize(); pos += 16) {
             var childDir = new Directory(block.ref(block.readRef(pos + 8)));
-            childDir.block.writeBlockRef(0, large.block);
+            childDir.block.writeRef(0, large.block);
         }
 
         var superblock = new Superblock(block.ref(0));

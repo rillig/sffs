@@ -49,7 +49,7 @@ final class Block {
         storage.write(offset(pos), buf, bufOffset, bufLength);
     }
 
-    void writeBlockRef(int pos, Block block) throws IOException {
+    void writeRef(int pos, Block block) throws IOException {
         storage.writeLong(offset(pos), block != null ? block.offset / 16 : 0);
     }
 

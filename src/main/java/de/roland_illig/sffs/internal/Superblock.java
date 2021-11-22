@@ -19,7 +19,7 @@ final class Superblock {
     }
 
     void setRootDirectoryRef(Block block) throws IOException {
-        this.block.writeBlockRef(0, block);
+        this.block.writeRef(0, block);
     }
 
     long getRootDirectoryRef() throws IOException {
