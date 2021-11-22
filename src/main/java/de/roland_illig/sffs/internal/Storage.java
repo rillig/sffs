@@ -73,7 +73,7 @@ final class Storage implements AutoCloseable {
 
     Directory allocateDirectory(int entries, long parentRef) throws IOException {
         var block = allocate(BlockType.DIRECTORY, 8 + entries * 16);
-        block.writeLong(0, parentRef);
+        block.writeRef(0, parentRef);
         return new Directory(block);
     }
 
