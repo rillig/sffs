@@ -191,14 +191,12 @@ class FilesystemTest {
                 "block 2 type DIRECTORY size 72",
                 "    parent 2",
                 "block 7 type FREE size 9",
-                "    nextFree 15",
+                "    nextFree 14",
                 "block 9 type FREE size 72",
                 "    nextFree 7",
-                "block 14 type FREE size 4",
-                "    nextFree 0",
                 // TODO: truncate the container file
-                "block 15 type FREE size 72",
-                "    nextFree 14"
+                "block 14 type FREE size 4",
+                "    nextFree 0"
         );
     }
 }

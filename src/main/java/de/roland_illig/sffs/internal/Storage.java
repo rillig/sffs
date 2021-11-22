@@ -103,6 +103,10 @@ final class Storage implements AutoCloseable {
 
     void free(long offset) throws IOException {
         assert readInt(offset) != BlockType.FREE.getMagic();
+        if (SffsUtil.blockEnd(offset, readInt(offset + 4)) == file.length()) {
+            file.setLength(offset);
+            return;
+        }
         writeInt(offset, BlockType.FREE.getMagic());
         writeRef(offset + 8, readRef(16)); // block.nextFree = super.firstFree
         writeRef(16, offset / 16); // super.firstFree = block
