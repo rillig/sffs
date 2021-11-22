@@ -20,10 +20,6 @@ final class Name {
         return new String(buf, StandardCharsets.UTF_8);
     }
 
-    Block getBlock() {
-        return block;
-    }
-
     static void check(String name) throws IOException {
         checkForbidden(name, '\0');
         checkForbidden(name, '/');
