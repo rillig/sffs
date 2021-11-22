@@ -5,6 +5,9 @@ import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Path;
 
+/**
+ * A directory consists of a reference to its parent directory, followed by the directory entries as (name, object).
+ */
 final class Directory {
 
     final Block block;
@@ -19,16 +22,16 @@ final class Directory {
 
     void mkdir(Path dir) throws IOException {
         var name = dir.getFileName().toString();
-        var firstEmpty = -1;
+        var emptyPos = -1;
         for (int pos = 8, size = block.getSize(); pos < size; pos += 16) {
             var nameRef = block.readRef(pos);
-            if (nameRef == 0 && firstEmpty == -1)
-                firstEmpty = pos;
+            if (nameRef == 0 && emptyPos == -1)
+                emptyPos = pos;
             if (nameEquals(nameRef, name))
                 throw new FileAlreadyExistsException(dir.toString());
         }
 
-        if (firstEmpty == -1) {
+        if (emptyPos == -1) {
             var enlarged = enlarge();
             enlarged.mkdir(dir);
             return;
@@ -36,8 +39,8 @@ final class Directory {
 
         var nameBlock = block.storage.allocateName(name);
         var dirBlock = block.storage.allocateDirectory(4, block.getRef());
-        block.writeRef(firstEmpty, nameBlock);
-        block.writeRef(firstEmpty + 8, dirBlock);
+        block.writeRef(emptyPos, nameBlock);
+        block.writeRef(emptyPos + 8, dirBlock);
     }
 
     void remove(Path dir) throws IOException {
