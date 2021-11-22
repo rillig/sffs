@@ -34,15 +34,13 @@ final class Directory {
 
     void mkdir(Path dir) throws IOException {
         var name = dir.getFileName().toString();
-        var rd = new BlockReader(block, 8); // skip the parent directory
         var firstEmpty = -1;
-        while (rd.hasNext()) {
-            var nameRef = rd.readRef();
+        for (var pos = 8; pos < block.getSize(); pos += 16) {
+            var nameRef = block.readRef(pos);
             if (nameRef == 0 && firstEmpty == -1)
-                firstEmpty = rd.getPos() - 8;
+                firstEmpty = pos;
             if (nameRef != 0 && new Name(block.ref(nameRef)).get().equals(name))
                 throw new FileAlreadyExistsException(dir.toString());
-            rd.readRef(); // skip the filesystem object
         }
 
         if (firstEmpty == -1) {
@@ -58,15 +56,13 @@ final class Directory {
     }
 
     Directory lookupDir(String name) throws IOException {
-        var rd = new BlockReader(block, 8); // skip the parent directory
-        while (rd.hasNext()) {
-            var nameRef = rd.readRef();
-            var objRef = rd.readRef();
+        for (var pos = 8; pos < block.getSize(); pos += 16) {
+            var nameRef = block.readRef(pos);
             if (nameRef == 0)
                 continue;
             var nameInDir = new Name(block.ref(nameRef)).get();
             if (name.equals(nameInDir))
-                return new Directory(block.ref(objRef));
+                return new Directory(block.ref(block.readRef(pos + 8)));
         }
         return null;
     }
