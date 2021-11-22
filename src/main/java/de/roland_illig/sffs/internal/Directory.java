@@ -13,11 +13,11 @@ final class Directory {
     }
 
     long getParentRef() throws IOException {
-        return block.readLong(0);
+        return block.readRef(0);
     }
 
-    void setParentRef(long ref) throws IOException {
-        block.writeLong(0, ref);
+    void setParent(Block parent) throws IOException {
+        block.writeRef(0, parent);
     }
 
     static void init(StorageWriter wr, long parentRef) throws IOException {
@@ -86,13 +86,13 @@ final class Directory {
 
         for (var pos = 8; pos < block.getSize(); pos += 16) {
             var childDir = new Directory(block.ref(block.readRef(pos + 8)));
-            childDir.block.writeRef(0, large.block);
+            childDir.setParent(large.block);
         }
 
         var superblock = new Superblock(block.ref(0));
         if (superblock.getRootDirectoryRef() == block.getRef()) {
             superblock.setRootDirectoryRef(large.block);
-            large.setParentRef(large.block.getRef());
+            large.setParent(large.block);
         }
 
         block.free();

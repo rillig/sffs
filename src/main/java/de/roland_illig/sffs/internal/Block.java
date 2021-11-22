@@ -33,12 +33,8 @@ final class Block {
         storage.readFully(offset(pos, len), buf, off, len);
     }
 
-    long readLong(int pos) throws IOException {
-        return storage.readLong(offset(pos, 8));
-    }
-
     long readRef(int pos) throws IOException {
-        return readLong(pos);
+        return storage.readLong(offset(pos, 8));
     }
 
     void write(int pos, byte[] buf, int off, int len) throws IOException {
