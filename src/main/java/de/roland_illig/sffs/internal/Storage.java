@@ -60,7 +60,7 @@ final class Storage implements AutoCloseable {
     void init() throws IOException {
         var wr = new StorageWriter(this, 0);
         Superblock.init(wr, 2, 0);
-        Directory.init(wr);
+        Directory.init(wr, 2);
     }
 
     Name allocName(String name) throws IOException {

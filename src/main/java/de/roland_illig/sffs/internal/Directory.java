@@ -10,11 +10,11 @@ final class Directory {
         this.block = block.checkType(BlockType.DIRECTORY);
     }
 
-    static void init(StorageWriter wr) throws IOException {
+    static void init(StorageWriter wr, long parentRef) throws IOException {
         var entries = 4;
         wr.writeInt(BlockType.DIRECTORY.getMagic());
         wr.writeInt(8 + 16 * entries);
-        wr.writeLong(0); // parent
+        wr.writeLong(parentRef);
         for (var i = 0; i < entries; i++) {
             wr.writeLong(0); // name
             wr.writeLong(0); // object
