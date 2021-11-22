@@ -59,6 +59,49 @@ class FilesystemTest {
     }
 
     @Test
+    void mkdir_existing(@TempDir File tmpdir) throws IOException {
+        var f = new File(tmpdir, "storage");
+
+        try (var fs = new Filesystem(f, "rw")) {
+            fs.mkdir(Path.of("Downloads"));
+            fs.mkdir(Path.of("Downloads"));
+        }
+
+        SffsTestUtil.assertDumpEquals(f,
+                // superblock
+                "53 46 30 31 00 00 00 10  00 00 00 00 00 00 00 02",
+                "00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00",
+                // root directory
+                "53 46 64 69 00 00 00 48  00 00 00 00 00 00 00 02",
+                "00 00 00 00 00 00 00 07  00 00 00 00 00 00 00 09",
+                // FIXME: Do not create this directory entry
+                "00 00 00 00 00 00 00 0E  00 00 00 00 00 00 00 10",
+                "00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00",
+                "00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00",
+                // name "Downloads"
+                "53 46 6E 6D 00 00 00 09  44 6F 77 6E 6C 6F 61 64",
+                "73 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00",
+                // directory "Downloads"
+                "53 46 64 69 00 00 00 48  00 00 00 00 00 00 00 02",
+                "00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00",
+                "00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00",
+                "00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00",
+                "00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00",
+                // FIXME: Do not create this name
+                // name "Downloads"
+                "53 46 6E 6D 00 00 00 09  44 6F 77 6E 6C 6F 61 64",
+                "73 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00",
+                // FIXME: Do not create this directory
+                // directory "Downloads"
+                "53 46 64 69 00 00 00 48  00 00 00 00 00 00 00 02",
+                "00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00",
+                "00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00",
+                "00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00",
+                "00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00"
+        );
+    }
+
+    @Test
     void mkdir_in_subdirectory(@TempDir File tmpdir) throws IOException {
         var f = new File(tmpdir, "storage");
 
