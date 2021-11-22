@@ -80,7 +80,7 @@ final class Directory {
 
         var superblock = new Superblock(block.ref(0));
         if (superblock.getRootDirectoryRef() == block.getRef()) {
-            superblock.setRootDirectoryRef(large);
+            superblock.setRootDirectory(large);
             large.writeRef(0, large);
         }
 
