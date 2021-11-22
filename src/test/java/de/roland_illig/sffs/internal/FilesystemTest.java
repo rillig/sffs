@@ -28,6 +28,13 @@ class FilesystemTest {
                 "00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00",
                 "00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00"
         );
+
+        SffsTestUtil.assertTextDumpEquals(f,
+                "block 0 type SUPER size 16",
+                "    root 2 firstFree 0",
+                "block 2 type DIRECTORY size 72",
+                "    parent 2"
+        );
     }
 
     @Test
