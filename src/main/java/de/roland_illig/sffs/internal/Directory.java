@@ -16,10 +16,6 @@ final class Directory {
         return block.readRef(0);
     }
 
-    void setParent(Block parent) throws IOException {
-        block.writeRef(0, parent);
-    }
-
     static void init(StorageWriter wr, long parentRef) throws IOException {
         var entries = 4;
         wr.writeInt(BlockType.DIRECTORY.getMagic());
@@ -71,15 +67,15 @@ final class Directory {
         block.readFully(8, entries, 0, entries.length);
         large.write(8, entries, 0, entries.length);
 
-        var parent = block.ref(getParentRef());
+        var parent = block.ref(getParentRef(), BlockType.DIRECTORY);
         for (int pos = 8, size = parent.getSize(); pos < size; pos += 16) {
             if (parent.readRef(pos + 8) == block.getRef())
                 parent.writeRef(pos + 8, large);
         }
 
         for (int pos = 8, size = block.getSize(); pos < size; pos += 16) {
-            var childDir = new Directory(block.ref(block.readRef(pos + 8)));
-            childDir.setParent(large);
+            var childDir = block.ref(block.readRef(pos + 8), BlockType.DIRECTORY);
+            childDir.writeRef(0, large);
         }
 
         var superblock = new Superblock(block.ref(0));

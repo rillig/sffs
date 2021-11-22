@@ -53,6 +53,10 @@ final class Block {
         return new Block(storage, 16 * ref);
     }
 
+    Block ref(long ref, BlockType type) throws IOException {
+        return ref(ref).checkType(type);
+    }
+
     private long offset(int pos, int len) throws IOException {
         var size = getSize();
         assert pos >= 0;
