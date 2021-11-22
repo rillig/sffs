@@ -38,14 +38,8 @@ final class Directory {
         }
 
         if (firstEmpty == -1) {
-            // TODO: create new directory with more space
-            // TODO: copy all existing entries over to the new directory
-            // TODO: update all references to this directory to point to the new directory
-            // TODO: - this.parent.find(this.name)
-            // TODO: - this.child.parent
-            // TODO: change the type of this block to FREE
-            // TODO: try again in the new directory
-            throw new UnsupportedOperationException("enlarging a directory");
+            var enlarged = enlarge();
+            enlarged.mkdir(dir);
         }
 
         var nameBlock = block.getStorage().allocName(name);
@@ -54,7 +48,7 @@ final class Directory {
         block.writeBlockRef(firstEmpty + 8, dirBlock.block);
     }
 
-    public Directory lookupDir(String name) throws IOException {
+    Directory lookupDir(String name) throws IOException {
         var rd = new BlockReader(block, 8); // skip the parent directory
         while (rd.hasNext()) {
             var nameRef = rd.readRef();
@@ -66,5 +60,16 @@ final class Directory {
                 return new Directory(block.ref(objRef));
         }
         return null;
+    }
+
+    private Directory enlarge() {
+        // TODO: create new directory with more space
+        // TODO: copy all existing entries over to the new directory
+        // TODO: update all references to this directory to point to the new directory
+        // TODO: - this.parent.find(this.name)
+        // TODO: - this.child.parent
+        // TODO: change the type of this block to FREE
+        // TODO: try again in the new directory
+        throw new UnsupportedOperationException("enlarging a directory");
     }
 }
