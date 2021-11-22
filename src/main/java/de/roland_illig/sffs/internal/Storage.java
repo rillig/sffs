@@ -21,34 +21,33 @@ final class Storage implements AutoCloseable {
         if (file.length() == 0) init();
     }
 
-    // TODO: rename 'pos' to 'offset'
-    int readInt(long pos) throws IOException {
-        file.seek(pos);
+    int readInt(long offset) throws IOException {
+        file.seek(offset);
         return file.readInt();
     }
 
-    long readLong(long pos) throws IOException {
-        file.seek(pos);
+    long readLong(long offset) throws IOException {
+        file.seek(offset);
         return file.readLong();
     }
 
-    void readFully(long pos, byte[] buf, int bufOffset, int bufLength) throws IOException {
-        file.seek(pos);
+    void readFully(long offset, byte[] buf, int bufOffset, int bufLength) throws IOException {
+        file.seek(offset);
         file.readFully(buf, bufOffset, bufLength);
     }
 
-    void write(long pos, byte[] buf, int bufOffset, int bufLength) throws IOException {
-        file.seek(pos);
+    void write(long offset, byte[] buf, int bufOffset, int bufLength) throws IOException {
+        file.seek(offset);
         file.write(buf, bufOffset, bufLength);
     }
 
-    void writeInt(long pos, int v) throws IOException {
-        file.seek(pos);
+    void writeInt(long offset, int v) throws IOException {
+        file.seek(offset);
         file.writeInt(v);
     }
 
-    void writeLong(long pos, long v) throws IOException {
-        file.seek(pos);
+    void writeLong(long offset, long v) throws IOException {
+        file.seek(offset);
         file.writeLong(v);
     }
 
