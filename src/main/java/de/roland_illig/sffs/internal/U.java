@@ -5,10 +5,6 @@ package de.roland_illig.sffs.internal;
  */
 final class U {
 
-    static int plus(int a, int b) {
-        return a + b;
-    }
-
     static long plus(long a, int b) {
         return a + extend(b);
     }
