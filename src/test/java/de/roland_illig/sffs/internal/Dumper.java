@@ -47,7 +47,6 @@ final class Dumper {
         switch (type) {
             case SUPER -> dumpSuper();
             case DIRECTORY -> dumpDirectory(blockSize);
-            case DIRECTORY_ENTRY -> dumpDirectoryEntry();
             case REGULAR -> dumpRegular();
             case FREE -> dumpFree();
             case NAME -> dumpName(blockSize);
@@ -76,10 +75,6 @@ final class Dumper {
             if (nameRef != 0 && objRef != 0)
                 println("    entry %d name %d object %d", pos / 16, nameRef, objRef);
         }
-    }
-
-    private void dumpDirectoryEntry() {
-        throw new UnsupportedOperationException();
     }
 
     private void dumpRegular() {

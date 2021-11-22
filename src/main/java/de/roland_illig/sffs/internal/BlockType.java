@@ -5,7 +5,6 @@ import java.io.IOException;
 enum BlockType {
     SUPER("SF01"),
     DIRECTORY("SFdi"),
-    DIRECTORY_ENTRY("SFde"),
     REGULAR("SFre"),
     FREE("SFfr"),
     NAME("SFnm");
