@@ -13,10 +13,6 @@ final class U {
         return a + extend(b);
     }
 
-    static boolean le(int a, int b) {
-        return Integer.compareUnsigned(a, b) <= 0;
-    }
-
     private static long extend(int a) {
         return (long) a & 0xFFFF_FFFFL;
     }
