@@ -37,8 +37,16 @@ final class Directory {
             rd.readRef(); // skip the filesystem object
         }
 
-        if (firstEmpty == -1)
+        if (firstEmpty == -1) {
+            // TODO: create new directory with more space
+            // TODO: copy all existing entries over to the new directory
+            // TODO: update all references to this directory to point to the new directory
+            // TODO: - this.parent.find(this.name)
+            // TODO: - this.child.parent
+            // TODO: change the type of this block to FREE
+            // TODO: try again in the new directory
             throw new UnsupportedOperationException("enlarging a directory");
+        }
 
         var nameBlock = block.getStorage().allocName(name);
         var dirBlock = block.getStorage().allocDirectory(block.getRef());
