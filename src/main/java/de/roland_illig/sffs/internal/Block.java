@@ -4,7 +4,7 @@ import java.io.IOException;
 
 final class Block {
 
-    private final Storage storage;
+    final Storage storage;
     private final long offset;
 
     private int size;
@@ -60,10 +60,6 @@ final class Block {
     private long offset(int pos, int len) throws IOException {
         SffsUtil.checkRange(pos, len, getSize());
         return U.plus(offset + 8, pos);
-    }
-
-    Storage getStorage() {
-        return storage;
     }
 
     Block checkType(BlockType type) throws IOException {
