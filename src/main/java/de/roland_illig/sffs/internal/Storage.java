@@ -31,14 +31,14 @@ final class Storage implements AutoCloseable {
         return file.readLong();
     }
 
-    void readFully(long offset, byte[] buf, int bufOffset, int bufLength) throws IOException {
+    void readFully(long offset, byte[] buf, int off, int len) throws IOException {
         file.seek(offset);
-        file.readFully(buf, bufOffset, bufLength);
+        file.readFully(buf, off, len);
     }
 
-    void write(long offset, byte[] buf, int bufOffset, int bufLength) throws IOException {
+    void write(long offset, byte[] buf, int off, int len) throws IOException {
         file.seek(offset);
-        file.write(buf, bufOffset, bufLength);
+        file.write(buf, off, len);
     }
 
     void writeInt(long offset, int v) throws IOException {
