@@ -58,12 +58,7 @@ final class Block {
     }
 
     private long offset(int pos, int len) throws IOException {
-        var size = getSize();
-        assert pos >= 0;
-        assert len >= 0;
-        assert pos + len >= 0;
-        assert pos + len <= size;
-
+        SffsUtil.checkRange(pos, len, getSize());
         return U.plus(offset + 8, pos);
     }
 
