@@ -13,7 +13,7 @@ class BlockAllocatorTest {
         var f = new File(tmpdir, "storage");
         var raf = new RandomAccessFile(f, "rw");
         var storage = new Storage(raf);
-        var blockAllocator = new BlockAllocator(new Allocator(storage));
+        var blockAllocator = new BlockAllocator(storage);
 
         var block = blockAllocator.allocName("directory name");
 

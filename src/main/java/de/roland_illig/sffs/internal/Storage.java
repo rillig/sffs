@@ -19,7 +19,7 @@ final class Storage implements AutoCloseable {
     Storage(RandomAccessFile file) throws IOException {
         this.file = file;
         if (file.length() == 0) init();
-        this.blockAllocator = new BlockAllocator(new Allocator(this));
+        this.blockAllocator = new BlockAllocator(this);
     }
 
     // TODO: rename 'pos' to 'offset'
