@@ -6,8 +6,8 @@ final class Directory {
 
     final Block block;
 
-    Directory(Block block) {
-        this.block = block;
+    Directory(Block block) throws IOException {
+        this.block = block.checkType(BlockType.DIRECTORY);
     }
 
     static void init(StorageWriter wr) throws IOException {
