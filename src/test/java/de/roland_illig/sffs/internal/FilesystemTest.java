@@ -130,5 +130,22 @@ class FilesystemTest {
                 "00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00",
                 "00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00"
         );
+
+        SffsTestUtil.assertTextDumpEquals(f,
+                "block 0 type SUPER size 16",
+                "    root 2 firstFree 0",
+                "block 2 type DIRECTORY size 72",
+                "    parent 2",
+                "    entry 0 name 7 object 9",
+                "block 7 type NAME size 9",
+                "    Downloads",
+                "block 9 type DIRECTORY size 72",
+                "    parent 2",
+                "    entry 0 name 14 object 15",
+                "block 14 type NAME size 4",
+                "    2021",
+                "block 15 type DIRECTORY size 72",
+                "    parent 9"
+        );
     }
 }

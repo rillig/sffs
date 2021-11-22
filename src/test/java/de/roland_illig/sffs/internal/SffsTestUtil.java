@@ -71,4 +71,9 @@ class SffsTestUtil {
             }
         }
     }
+
+    static void assertTextDumpEquals(File f, String... expectedTextRows) throws IOException {
+        var actual = Dumper.dump(f);
+        assertThat(actual).containsExactly(expectedTextRows);
+    }
 }
