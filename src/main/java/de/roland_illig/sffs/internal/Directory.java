@@ -35,11 +35,11 @@ final class Directory {
     void mkdir(Path dir) throws IOException {
         var name = dir.getFileName().toString();
         var firstEmpty = -1;
-        for (var pos = 8; pos < block.getSize(); pos += 16) {
+        for (int pos = 8, size = block.getSize(); pos < size; pos += 16) {
             var nameRef = block.readRef(pos);
             if (nameRef == 0 && firstEmpty == -1)
                 firstEmpty = pos;
-            if (nameRef != 0 && new Name(block.ref(nameRef)).get().equals(name))
+            if (nameEquals(nameRef, name))
                 throw new FileAlreadyExistsException(dir.toString());
         }
 
@@ -56,12 +56,9 @@ final class Directory {
     }
 
     Directory lookupDir(String name) throws IOException {
-        for (var pos = 8; pos < block.getSize(); pos += 16) {
+        for (int pos = 8, size = block.getSize(); pos < size; pos += 16) {
             var nameRef = block.readRef(pos);
-            if (nameRef == 0)
-                continue;
-            var nameInDir = new Name(block.ref(nameRef)).get();
-            if (name.equals(nameInDir))
+            if (nameEquals(nameRef, name))
                 return new Directory(block.ref(block.readRef(pos + 8)));
         }
         return null;
@@ -74,13 +71,13 @@ final class Directory {
         block.readFully(8, entries, 0, entries.length);
         large.write(8, entries, 0, entries.length);
 
-        var parentDir = new Directory(block.ref(getParentRef()));
-        for (var pos = 8; pos < parentDir.block.getSize(); pos += 16) {
-            if (parentDir.block.readRef(pos + 8) == block.getRef())
-                parentDir.block.writeRef(pos + 8, large);
+        var parent = block.ref(getParentRef());
+        for (int pos = 8, size = parent.getSize(); pos < size; pos += 16) {
+            if (parent.readRef(pos + 8) == block.getRef())
+                parent.writeRef(pos + 8, large);
         }
 
-        for (var pos = 8; pos < block.getSize(); pos += 16) {
+        for (int pos = 8, size = block.getSize(); pos < size; pos += 16) {
             var childDir = new Directory(block.ref(block.readRef(pos + 8)));
             childDir.setParent(large);
         }
@@ -93,5 +90,9 @@ final class Directory {
 
         block.free();
         return new Directory(large);
+    }
+
+    private boolean nameEquals(long nameRef, String name) throws IOException {
+        return nameRef != 0 && new Name(block.ref(nameRef)).get().equals(name);
     }
 }
