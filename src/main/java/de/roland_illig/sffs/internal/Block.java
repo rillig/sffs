@@ -30,15 +30,11 @@ final class Block {
     }
 
     void readFully(int pos, byte[] buf, int bufOffset, int bufLength) throws IOException {
-        SffsUtil.require(bufLength >= 0);
-        SffsUtil.require(U.le(pos, getSize()));
-        SffsUtil.require(U.le(pos + bufLength, getSize()));
-
-        storage.readFully(offset(pos), buf, bufOffset, bufLength);
+        storage.readFully(offset(pos, bufLength), buf, bufOffset, bufLength);
     }
 
     long readLong(int pos) throws IOException {
-        return storage.readLong(offset(pos));
+        return storage.readLong(offset(pos, 8));
     }
 
     long readRef(int pos) throws IOException {
@@ -46,26 +42,32 @@ final class Block {
     }
 
     void write(int pos, byte[] buf, int bufOffset, int bufLength) throws IOException {
-        storage.write(offset(pos), buf, bufOffset, bufLength);
+        storage.write(offset(pos, bufLength), buf, bufOffset, bufLength);
     }
 
     void writeRef(int pos, Block block) throws IOException {
-        storage.writeLong(offset(pos), block != null ? block.offset / 16 : 0);
+        writeLong(pos, block != null ? block.offset / 16 : 0);
     }
 
     void writeInt(int pos, int v) throws IOException {
-        storage.writeInt(offset(pos), v);
+        storage.writeInt(offset(pos, 4), v);
     }
 
     void writeLong(int pos, long v) throws IOException {
-        storage.writeLong(offset(pos), v);
+        storage.writeLong(offset(pos, 8), v);
     }
 
     Block ref(long ref) throws IOException {
         return new Block(storage, 16 * ref);
     }
 
-    private long offset(int pos) {
+    private long offset(int pos, int len) throws IOException {
+        var size = getSize();
+        assert pos >= 0;
+        assert len >= 0;
+        assert pos + len >= 0;
+        assert pos + len <= size;
+
         return U.plus(offset + 8, pos);
     }
 
@@ -74,7 +76,7 @@ final class Block {
     }
 
     Block checkType(BlockType type) throws IOException {
-        SffsUtil.require(type == getType());
+        assert type == getType();
         return this;
     }
 

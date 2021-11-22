@@ -2,10 +2,6 @@ package de.roland_illig.sffs.internal;
 
 final class SffsUtil {
 
-    static void require(boolean cond) {
-        if (!cond) throw new IllegalArgumentException();
-    }
-
     static int padding(int pos) {
         if (pos % 16 == 0) return 0;
         return 16 - (pos & 0x0F);
