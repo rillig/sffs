@@ -1,10 +1,11 @@
 package de.roland_illig.sffs.internal;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Path;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -64,7 +65,7 @@ class FilesystemTest {
 
         try (var fs = new Filesystem(f, "rw")) {
             fs.mkdir(Path.of("Downloads"));
-            Assertions.assertThatThrownBy(() -> fs.mkdir(Path.of("Downloads")))
+            assertThatThrownBy(() -> fs.mkdir(Path.of("Downloads")))
                     .isExactlyInstanceOf(FileAlreadyExistsException.class)
                     .hasMessage("Downloads");
         }
@@ -107,6 +108,53 @@ class FilesystemTest {
                 "    2021",
                 "block 15 type DIRECTORY size 72",
                 "    parent 9"
+        );
+    }
+
+    /**
+     * Create several directories, so that the directory block needs to be resized.
+     */
+    @Test
+    void mkdir_extend(@TempDir File tmpdir) throws IOException {
+        var f = new File(tmpdir, "storage");
+
+        try (var fs = new Filesystem(f, "rw")) {
+            fs.mkdir(Path.of("dir1"));
+            fs.mkdir(Path.of("dir2"));
+            fs.mkdir(Path.of("dir3"));
+            fs.mkdir(Path.of("dir4"));
+
+            assertThatThrownBy(() -> fs.mkdir(Path.of("dir5")))
+                    .isExactlyInstanceOf(UnsupportedOperationException.class)
+                    .hasMessage("enlarging a directory");
+        }
+
+        SffsTestUtil.assertTextDumpEquals(f,
+                "block 0 type SUPER size 16",
+                "    root 2 firstFree 0", // TODO: firstFree 2
+                "block 2 type DIRECTORY size 72", // TODO: type FREE
+                "    parent 2",
+                "    entry 0 name 7 object 8", // TODO: let the Dumper ignore freed data
+                "    entry 1 name 13 object 14",
+                "    entry 2 name 19 object 20",
+                "    entry 3 name 25 object 26",
+                "block 7 type NAME size 4",
+                "    dir1",
+                "block 8 type DIRECTORY size 72",
+                "    parent 2",
+                "block 13 type NAME size 4",
+                "    dir2",
+                "block 14 type DIRECTORY size 72",
+                "    parent 2",
+                "block 19 type NAME size 4",
+                "    dir3",
+                "block 20 type DIRECTORY size 72",
+                "    parent 2",
+                "block 25 type NAME size 4",
+                "    dir4",
+                "block 26 type DIRECTORY size 72",
+                "    parent 2"
+                // TODO: directory with space for at least 5 entries
         );
     }
 }
