@@ -53,8 +53,8 @@ final class Directory {
 
         var nameBlock = block.getStorage().allocateName(name);
         var dirBlock = block.getStorage().allocateDirectory(4, block.getRef());
-        block.writeRef(firstEmpty, nameBlock.getBlock());
-        block.writeRef(firstEmpty + 8, dirBlock.block);
+        block.writeRef(firstEmpty, nameBlock);
+        block.writeRef(firstEmpty + 8, dirBlock);
     }
 
     Directory lookupDir(String name) throws IOException {
@@ -76,26 +76,26 @@ final class Directory {
 
         var entries = new byte[block.getSize() - 8];
         block.readFully(8, entries, 0, entries.length);
-        large.block.write(8, entries, 0, entries.length);
+        large.write(8, entries, 0, entries.length);
 
         var parentDir = new Directory(block.ref(getParentRef()));
         for (var pos = 8; pos < parentDir.block.getSize(); pos += 16) {
             if (parentDir.block.readRef(pos + 8) == block.getRef())
-                parentDir.block.writeRef(pos + 8, large.block);
+                parentDir.block.writeRef(pos + 8, large);
         }
 
         for (var pos = 8; pos < block.getSize(); pos += 16) {
             var childDir = new Directory(block.ref(block.readRef(pos + 8)));
-            childDir.setParent(large.block);
+            childDir.setParent(large);
         }
 
         var superblock = new Superblock(block.ref(0));
         if (superblock.getRootDirectoryRef() == block.getRef()) {
-            superblock.setRootDirectoryRef(large.block);
-            large.setParent(large.block);
+            superblock.setRootDirectoryRef(large);
+            large.writeRef(0, large);
         }
 
         block.free();
-        return large;
+        return new Directory(large);
     }
 }
