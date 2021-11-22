@@ -22,6 +22,7 @@ final class Storage implements AutoCloseable {
         this.blockAllocator = new BlockAllocator(new Allocator(this));
     }
 
+    // TODO: rename 'pos' to 'offset'
     int readInt(long pos) throws IOException {
         file.seek(pos);
         return file.readInt();
@@ -67,8 +68,8 @@ final class Storage implements AutoCloseable {
         return blockAllocator.allocName(name);
     }
 
-    Directory allocDirectory(long parentRef) throws IOException {
-        return blockAllocator.allocDirectory(parentRef);
+    Directory allocDirectory(int entries, long parentRef) throws IOException {
+        return blockAllocator.allocDirectory(entries, parentRef);
     }
 
     Block createBlock(BlockType type, int size) throws IOException {
@@ -78,5 +79,12 @@ final class Storage implements AutoCloseable {
         file.writeInt(size);
         file.setLength(SffsUtil.blockEnd(offset, size));
         return new Block(this, offset);
+    }
+
+    void free(long offset) throws IOException {
+        assert readInt(offset) != BlockType.FREE.getMagic();
+        writeInt(offset, BlockType.FREE.getMagic());
+        writeLong(offset + 8, readLong(16)); // block.nextFree = super.firstFree
+        writeLong(16, offset / 16); // super.firstFree = block
     }
 }

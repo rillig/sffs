@@ -122,39 +122,43 @@ class FilesystemTest {
             fs.mkdir(Path.of("dir1"));
             fs.mkdir(Path.of("dir2"));
             fs.mkdir(Path.of("dir3"));
-            fs.mkdir(Path.of("dir4"));
+            fs.mkdir(Path.of("dir4")); // still fits
 
-            assertThatThrownBy(() -> fs.mkdir(Path.of("dir5")))
-                    .isExactlyInstanceOf(UnsupportedOperationException.class)
-                    .hasMessage("enlarging a directory");
+            fs.mkdir(Path.of("dir5")); // enlarge
         }
 
         SffsTestUtil.assertTextDumpEquals(f,
                 "block 0 type SUPER size 16",
-                "    root 2 firstFree 0", // TODO: firstFree 2
-                "block 2 type DIRECTORY size 72", // TODO: type FREE
-                "    parent 2",
-                "    entry 0 name 7 object 8", // TODO: let the Dumper ignore freed data
-                "    entry 1 name 13 object 14",
-                "    entry 2 name 19 object 20",
-                "    entry 3 name 25 object 26",
+                "    root 31 firstFree 2",
+                "block 2 type FREE size 72",
+                "    nextFree 0",
                 "block 7 type NAME size 4",
                 "    dir1",
                 "block 8 type DIRECTORY size 72",
-                "    parent 2",
+                "    parent 31",
                 "block 13 type NAME size 4",
                 "    dir2",
                 "block 14 type DIRECTORY size 72",
-                "    parent 2",
+                "    parent 31",
                 "block 19 type NAME size 4",
                 "    dir3",
                 "block 20 type DIRECTORY size 72",
-                "    parent 2",
+                "    parent 31",
                 "block 25 type NAME size 4",
                 "    dir4",
                 "block 26 type DIRECTORY size 72",
-                "    parent 2"
-                // TODO: directory with space for at least 5 entries
+                "    parent 31",
+                "block 31 type DIRECTORY size 136",
+                "    parent 31",
+                "    entry 0 name 7 object 8",
+                "    entry 1 name 13 object 14",
+                "    entry 2 name 19 object 20",
+                "    entry 3 name 25 object 26",
+                "    entry 4 name 40 object 41",
+                "block 40 type NAME size 4",
+                "    dir5",
+                "block 41 type DIRECTORY size 72",
+                "    parent 31"
         );
     }
 }

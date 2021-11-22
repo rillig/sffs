@@ -73,8 +73,12 @@ final class Block {
         return storage;
     }
 
-    public Block checkType(BlockType type) throws IOException {
+    Block checkType(BlockType type) throws IOException {
         SffsUtil.require(type == getType());
         return this;
+    }
+
+    void free() throws IOException {
+        storage.free(offset);
     }
 }

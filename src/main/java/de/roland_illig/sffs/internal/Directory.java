@@ -12,6 +12,14 @@ final class Directory {
         this.block = block.checkType(BlockType.DIRECTORY);
     }
 
+    long getParentRef() throws IOException {
+        return block.readLong(0);
+    }
+
+    void setParentRef(long ref) throws IOException {
+        block.writeLong(0, ref);
+    }
+
     static void init(StorageWriter wr, long parentRef) throws IOException {
         var entries = 4;
         wr.writeInt(BlockType.DIRECTORY.getMagic());
@@ -40,10 +48,11 @@ final class Directory {
         if (firstEmpty == -1) {
             var enlarged = enlarge();
             enlarged.mkdir(dir);
+            return;
         }
 
         var nameBlock = block.getStorage().allocName(name);
-        var dirBlock = block.getStorage().allocDirectory(block.getRef());
+        var dirBlock = block.getStorage().allocDirectory(4, block.getRef());
         block.writeBlockRef(firstEmpty, nameBlock.getBlock());
         block.writeBlockRef(firstEmpty + 8, dirBlock.block);
     }
@@ -62,14 +71,31 @@ final class Directory {
         return null;
     }
 
-    private Directory enlarge() {
-        // TODO: create new directory with more space
-        // TODO: copy all existing entries over to the new directory
-        // TODO: update all references to this directory to point to the new directory
-        // TODO: - this.parent.find(this.name)
-        // TODO: - this.child.parent
-        // TODO: change the type of this block to FREE
-        // TODO: try again in the new directory
-        throw new UnsupportedOperationException("enlarging a directory");
+    private Directory enlarge() throws IOException {
+        var large = block.getStorage().allocDirectory(2 * (block.getSize() / 16), getParentRef());
+
+        var entries = new byte[block.getSize() - 8];
+        block.readFully(8, entries, 0, entries.length);
+        large.block.write(8, entries, 0, entries.length);
+
+        var parentDir = new Directory(block.ref(getParentRef()));
+        for (var pos = 8; pos < parentDir.block.getSize(); pos += 16) {
+            if (parentDir.block.readRef(pos + 8) == block.getRef())
+                parentDir.block.writeBlockRef(pos + 8, large.block);
+        }
+
+        for (var pos = 8; pos < block.getSize(); pos += 16) {
+            var childDir = new Directory(block.ref(block.readRef(pos + 8)));
+            childDir.block.writeBlockRef(0, large.block);
+        }
+
+        var superblock = new Superblock(block.ref(0));
+        if (superblock.getRootDirectoryRef() == block.getRef()) {
+            superblock.setRootDirectoryRef(large.block);
+            large.setParentRef(large.block.getRef());
+        }
+
+        block.free();
+        return large;
     }
 }

@@ -20,8 +20,8 @@ final class BlockAllocator {
         return new Name(block);
     }
 
-    Directory allocDirectory(long parentRef) throws IOException {
-        var block = allocator.alloc(BlockType.DIRECTORY, 8 + 4 * 16);
+    Directory allocDirectory(int entries, long parentRef) throws IOException {
+        var block = allocator.alloc(BlockType.DIRECTORY, 8 + entries * 16);
         block.writeLong(0, parentRef);
         return new Directory(block);
     }

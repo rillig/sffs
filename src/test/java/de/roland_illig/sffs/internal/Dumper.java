@@ -48,7 +48,7 @@ final class Dumper {
             case SUPER -> dumpSuper();
             case DIRECTORY -> dumpDirectory(blockSize);
             case REGULAR -> dumpRegular();
-            case FREE -> dumpFree();
+            case FREE -> dumpFree(blockSize);
             case NAME -> dumpName(blockSize);
         }
 
@@ -81,8 +81,12 @@ final class Dumper {
         throw new UnsupportedOperationException();
     }
 
-    private void dumpFree() {
-        throw new UnsupportedOperationException();
+    private void dumpFree(int blockSize) throws IOException {
+        var nextFreeRef = raf.readLong();
+        println("    nextFree %d", nextFreeRef);
+
+        // Ignore freed bytes for now; in a privacy-enhanced version these would have to be zeroed out.
+        raf.skipBytes(blockSize - 8);
     }
 
     private void dumpName(int blockSize) throws IOException {

@@ -18,12 +18,15 @@ final class Superblock {
         wr.writePadding();
     }
 
-    void setRootDirectory(Directory dir) throws IOException {
-        block.writeBlockRef(0, dir.block);
+    void setRootDirectoryRef(Block block) throws IOException {
+        this.block.writeBlockRef(0, block);
+    }
+
+    long getRootDirectoryRef() throws IOException {
+        return block.readRef(0);
     }
 
     Directory getRootDirectory() throws IOException {
-        var ref = block.readRef(0);
-        return new Directory(block.ref(ref));
+        return new Directory(block.ref(getRootDirectoryRef()));
     }
 }
