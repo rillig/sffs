@@ -2,6 +2,7 @@ package de.roland_illig.sffs.internal;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Provides access to the underlying random access storage.
@@ -14,12 +15,10 @@ import java.io.RandomAccessFile;
 final class Storage implements AutoCloseable {
 
     private final RandomAccessFile file;
-    private final BlockAllocator blockAllocator;
 
     Storage(RandomAccessFile file) throws IOException {
         this.file = file;
         if (file.length() == 0) init();
-        this.blockAllocator = new BlockAllocator(this);
     }
 
     // TODO: rename 'pos' to 'offset'
@@ -65,11 +64,18 @@ final class Storage implements AutoCloseable {
     }
 
     Name allocName(String name) throws IOException {
-        return blockAllocator.allocName(name);
+        Name.check(name);
+
+        var bytes = name.getBytes(StandardCharsets.UTF_8);
+        var block = createBlock(BlockType.NAME, bytes.length);
+        block.write(0, bytes, 0, bytes.length);
+        return new Name(block);
     }
 
     Directory allocDirectory(int entries, long parentRef) throws IOException {
-        return blockAllocator.allocDirectory(entries, parentRef);
+        var block = createBlock(BlockType.DIRECTORY, 8 + entries * 16);
+        block.writeLong(0, parentRef);
+        return new Directory(block);
     }
 
     Block createBlock(BlockType type, int size) throws IOException {
