@@ -58,8 +58,23 @@ final class Storage implements AutoCloseable {
 
     void init() throws IOException {
         var wr = new StorageWriter(this, 0);
-        Superblock.init(wr, 2, 0);
-        Directory.init(wr, 2);
+        var rootDir = 2L;
+
+        wr.writeInt(BlockType.SUPER.getMagic());
+        wr.writeInt(16);
+        wr.writeRef(rootDir);
+        wr.writeRef(0); // first free
+        wr.writePadding();
+
+        var entries = 4;
+        wr.writeInt(BlockType.DIRECTORY.getMagic());
+        wr.writeInt(8 + 16 * entries);
+        wr.writeRef(rootDir); // parent
+        for (var i = 0; i < entries; i++) {
+            wr.writeRef(0); // name
+            wr.writeRef(0); // object
+        }
+        wr.writePadding();
     }
 
     Block allocateName(String name) throws IOException {

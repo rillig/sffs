@@ -16,18 +16,6 @@ final class Directory {
         return block.readRef(0);
     }
 
-    static void init(StorageWriter wr, long parentRef) throws IOException {
-        var entries = 4;
-        wr.writeInt(BlockType.DIRECTORY.getMagic());
-        wr.writeInt(8 + 16 * entries);
-        wr.writeRef(parentRef);
-        for (var i = 0; i < entries; i++) {
-            wr.writeRef(0); // name
-            wr.writeRef(0); // object
-        }
-        wr.writePadding();
-    }
-
     void mkdir(Path dir) throws IOException {
         var name = dir.getFileName().toString();
         var firstEmpty = -1;
