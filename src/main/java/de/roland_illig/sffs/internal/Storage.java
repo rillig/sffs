@@ -62,22 +62,22 @@ final class Storage implements AutoCloseable {
         Directory.init(wr, 2);
     }
 
-    Name allocName(String name) throws IOException {
+    Name allocateName(String name) throws IOException {
         Name.check(name);
 
         var bytes = name.getBytes(StandardCharsets.UTF_8);
-        var block = createBlock(BlockType.NAME, bytes.length);
+        var block = allocate(BlockType.NAME, bytes.length);
         block.write(0, bytes, 0, bytes.length);
         return new Name(block);
     }
 
-    Directory allocDirectory(int entries, long parentRef) throws IOException {
-        var block = createBlock(BlockType.DIRECTORY, 8 + entries * 16);
+    Directory allocateDirectory(int entries, long parentRef) throws IOException {
+        var block = allocate(BlockType.DIRECTORY, 8 + entries * 16);
         block.writeLong(0, parentRef);
         return new Directory(block);
     }
 
-    Block createBlock(BlockType type, int size) throws IOException {
+    private Block allocate(BlockType type, int size) throws IOException {
         var offset = file.length();
         file.seek(offset);
         file.writeInt(type.getMagic());

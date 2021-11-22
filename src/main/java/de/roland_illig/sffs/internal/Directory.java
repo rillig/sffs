@@ -51,8 +51,8 @@ final class Directory {
             return;
         }
 
-        var nameBlock = block.getStorage().allocName(name);
-        var dirBlock = block.getStorage().allocDirectory(4, block.getRef());
+        var nameBlock = block.getStorage().allocateName(name);
+        var dirBlock = block.getStorage().allocateDirectory(4, block.getRef());
         block.writeBlockRef(firstEmpty, nameBlock.getBlock());
         block.writeBlockRef(firstEmpty + 8, dirBlock.block);
     }
@@ -72,7 +72,7 @@ final class Directory {
     }
 
     private Directory enlarge() throws IOException {
-        var large = block.getStorage().allocDirectory(2 * (block.getSize() / 16), getParentRef());
+        var large = block.getStorage().allocateDirectory(2 * (block.getSize() / 16), getParentRef());
 
         var entries = new byte[block.getSize() - 8];
         block.readFully(8, entries, 0, entries.length);
