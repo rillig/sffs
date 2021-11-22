@@ -19,13 +19,15 @@ final class Filesystem implements AutoCloseable {
     }
 
     void mkdir(Path dir) throws IOException {
-        var parent = lookupParent(dir);
+        var parent = lookup(dir, -1);
         if (parent == null) throw new FileNotFoundException(dir.getParent().toString());
         parent.mkdir(dir);
     }
 
-    void rmdir(Path dir) {
-        throw new UnsupportedOperationException();
+    void rmdir(Path dir) throws IOException {
+        var d = lookup(dir, 0);
+        if (d == null) throw new FileNotFoundException(dir.toString());
+        d.remove(dir);
     }
 
     Stream<DirectoryEntry> readdir(Path dir) {
@@ -52,10 +54,10 @@ final class Filesystem implements AutoCloseable {
         storage.close();
     }
 
-    private Directory lookupParent(Path path) throws IOException {
+    private Directory lookup(Path path, int rtrim) throws IOException {
         var superblock = new Superblock(storage);
         var cwd = superblock.getRootDirectory();
-        for (int i = 0, n = path.getNameCount() - 1; cwd != null && i < n; i++)
+        for (int i = 0, n = path.getNameCount() + rtrim; cwd != null && i < n; i++)
             cwd = cwd.lookupDir(path.getName(i).toString());
         return cwd;
     }

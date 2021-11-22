@@ -63,7 +63,8 @@ final class Block {
     }
 
     Block checkType(BlockType type) throws IOException {
-        assert type == getType();
+        if (type != getType())
+            throw new IllegalStateException("expecting " + type + ", got " + getType());
         return this;
     }
 

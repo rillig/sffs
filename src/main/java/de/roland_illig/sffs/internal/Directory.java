@@ -1,6 +1,7 @@
 package de.roland_illig.sffs.internal;
 
 import java.io.IOException;
+import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Path;
 
@@ -37,6 +38,23 @@ final class Directory {
         var dirBlock = block.storage.allocateDirectory(4, block.getRef());
         block.writeRef(firstEmpty, nameBlock);
         block.writeRef(firstEmpty + 8, dirBlock);
+    }
+
+    void remove(Path dir) throws IOException {
+        for (int pos = 8, size = block.getSize(); pos < size; pos += 16)
+            if (block.readRef(pos) != 0)
+                throw new DirectoryNotEmptyException(dir.toString());
+
+        var parent = new Directory(block.ref(block.readRef(0)));
+        for (int pos = 8, size = parent.block.getSize(); pos < size; pos += 16) {
+            if (parent.block.readRef(pos + 8) == block.getRef()) {
+                block.ref(parent.block.readRef(pos), BlockType.NAME).free();
+                parent.block.writeRef(pos, 0);
+                parent.block.writeRef(pos + 8, 0);
+                block.free();
+                return;
+            }
+        }
     }
 
     Directory lookupDir(String name) throws IOException {

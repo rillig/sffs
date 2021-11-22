@@ -3,7 +3,9 @@ package de.roland_illig.sffs.internal;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
@@ -159,6 +161,44 @@ class FilesystemTest {
                 "    dir5",
                 "block 41 type DIRECTORY size 72",
                 "    parent 31"
+        );
+    }
+
+    @Test
+    void rmdir(@TempDir File tmpdir) throws IOException {
+        var f = new File(tmpdir, "storage");
+
+        try (var fs = new Filesystem(f, "rw")) {
+            fs.mkdir(Path.of("Downloads"));
+            fs.mkdir(Path.of("Downloads", "2021"));
+
+            assertThatThrownBy(() -> fs.rmdir(Path.of("nonexistent")))
+                    .isExactlyInstanceOf(FileNotFoundException.class)
+                    .hasMessage("nonexistent");
+
+            assertThatThrownBy(() -> fs.rmdir(Path.of("Downloads")))
+                    .isExactlyInstanceOf(DirectoryNotEmptyException.class)
+                    .hasMessage("Downloads");
+
+            fs.rmdir(Path.of("Downloads", "2021"));
+
+            fs.rmdir(Path.of("Downloads"));
+        }
+
+        SffsTestUtil.assertTextDumpEquals(f,
+                "block 0 type SUPER size 16",
+                "    root 2 firstFree 9",
+                "block 2 type DIRECTORY size 72",
+                "    parent 2",
+                "block 7 type FREE size 9",
+                "    nextFree 15",
+                "block 9 type FREE size 72",
+                "    nextFree 7",
+                "block 14 type FREE size 4",
+                "    nextFree 0",
+                // TODO: truncate the container file
+                "block 15 type FREE size 72",
+                "    nextFree 14"
         );
     }
 }
