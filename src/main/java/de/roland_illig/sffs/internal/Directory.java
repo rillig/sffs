@@ -24,10 +24,10 @@ final class Directory {
         var entries = 4;
         wr.writeInt(BlockType.DIRECTORY.getMagic());
         wr.writeInt(8 + 16 * entries);
-        wr.writeLong(parentRef);
+        wr.writeRef(parentRef);
         for (var i = 0; i < entries; i++) {
-            wr.writeLong(0); // name
-            wr.writeLong(0); // object
+            wr.writeRef(0); // name
+            wr.writeRef(0); // object
         }
         wr.writePadding();
     }

@@ -10,11 +10,11 @@ final class Superblock {
         this.block = block.checkType(BlockType.SUPER);
     }
 
-    static void init(StorageWriter wr, long rootDirectory, long firstFree) throws IOException {
+    static void init(StorageWriter wr, long rootDirectoryRef, long firstFreeRef) throws IOException {
         wr.writeInt(BlockType.SUPER.getMagic());
         wr.writeInt(16);
-        wr.writeLong(rootDirectory);
-        wr.writeLong(firstFree);
+        wr.writeRef(rootDirectoryRef);
+        wr.writeRef(firstFreeRef);
         wr.writePadding();
     }
 

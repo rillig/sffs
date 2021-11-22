@@ -17,8 +17,8 @@ final class StorageWriter {
         pos += 4;
     }
 
-    void writeLong(long v) throws IOException {
-        storage.writeLong(pos, v);
+    void writeRef(long ref) throws IOException {
+        storage.writeRef(pos, ref);
         pos += 8;
     }
 

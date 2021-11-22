@@ -26,7 +26,7 @@ final class Storage implements AutoCloseable {
         return file.readInt();
     }
 
-    long readLong(long offset) throws IOException {
+    long readRef(long offset) throws IOException {
         file.seek(offset);
         return file.readLong();
     }
@@ -46,9 +46,9 @@ final class Storage implements AutoCloseable {
         file.writeInt(v);
     }
 
-    void writeLong(long offset, long v) throws IOException {
+    void writeRef(long offset, long ref) throws IOException {
         file.seek(offset);
-        file.writeLong(v);
+        file.writeLong(ref);
     }
 
     @Override
@@ -89,7 +89,7 @@ final class Storage implements AutoCloseable {
     void free(long offset) throws IOException {
         assert readInt(offset) != BlockType.FREE.getMagic();
         writeInt(offset, BlockType.FREE.getMagic());
-        writeLong(offset + 8, readLong(16)); // block.nextFree = super.firstFree
-        writeLong(16, offset / 16); // super.firstFree = block
+        writeRef(offset + 8, readRef(16)); // block.nextFree = super.firstFree
+        writeRef(16, offset / 16); // super.firstFree = block
     }
 }
