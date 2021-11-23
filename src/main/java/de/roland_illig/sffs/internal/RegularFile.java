@@ -30,9 +30,9 @@ final class RegularFile {
         SffsUtil.checkRange(off, len, block.getSize());
         if (offset < 0)
             throw new IndexOutOfBoundsException(offset);
-        if (offset + 8 + len > block.getSize())
+        if (8 + offset + len > block.getSize())
             throw new IndexOutOfBoundsException(offset + len);
-        block.write((int) offset + 8, buf, off, len);
+        block.write(8 + (int) offset, buf, off, len);
         if (offset + len > getSize())
             setSize(offset + len);
     }
