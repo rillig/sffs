@@ -133,8 +133,8 @@ offset   type            content
      8   U63             file size
     16   U31             chunk size (for large files) or 0 (for small files)
     20   zero[12]        reserved
-    24   byte[...]       for small files: file content 
-    24   BlockRef[...]   for large files: the chunks containing the actual file data
+    32   byte[...]       for small files: file content 
+    32   BlockRef[...]   for large files: the chunks containing the actual file data
 ~~~
 
 When a regular file is created, it starts as a "small file", consisting of a single block. The size of this block is
