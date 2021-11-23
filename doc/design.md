@@ -156,6 +156,9 @@ into chunks. The original block then contains a list of references to the chunks
 All chunks of a large file must have the same block size. Each chunk stores the number of bytes given in the field
 "chunk size" in the main block.
 
+Chunks for data beyond the current file size may or may not be allocated. They may be converted into free blocks at any
+time.
+
 ### File chunk
 
 When a regular file becomes too large for its single block, it is split into chunks, see [Regular file](#regular-file).
