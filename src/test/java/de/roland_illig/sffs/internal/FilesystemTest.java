@@ -265,15 +265,7 @@ class FilesystemTest {
                 "    file",
                 "block 8 type REGULAR size 4096",
                 "    size 8",
-                // FIXME: these digits are part of the file
-                "00000090: error: non-zero padding 0x31",
-                "00000091: error: non-zero padding 0x32",
-                "00000092: error: non-zero padding 0x33",
-                "00000093: error: non-zero padding 0x34",
-                "00000094: error: non-zero padding 0x35",
-                "00000095: error: non-zero padding 0x36",
-                "00000096: error: non-zero padding 0x37",
-                "00000097: error: non-zero padding 0x38"
+                "    00000000  31 32 33 34 35 36 37 38"
         );
     }
 }

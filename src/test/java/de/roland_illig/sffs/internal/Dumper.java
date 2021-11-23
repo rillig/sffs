@@ -79,15 +79,23 @@ final class Dumper {
     }
 
     private void dumpRegular() throws IOException {
-        var size = raf.readLong();
-        println("    size %d", size);
+        var fileSize = raf.readLong();
+        println("    size %d", fileSize);
+
         var zero = new byte[16];
         var row = new byte[16];
-        for (var pos = 16; pos < size; pos += 16) {
-            var n = raf.read(row, 0, size - pos > 16 ? 16 : (int) (size - pos));
-            if (!Arrays.equals(row, 0, n, zero, 0, n))
-                println("    %08x  %s", pos - 16, SffsTestUtil.hexdump(row, 0, n));
+        var fileSizeLastRow = (int) (fileSize % 16);
+        var fileSizeFullRows = fileSize - fileSizeLastRow;
+
+        for (long pos = 0; pos < fileSizeFullRows; pos += 16) {
+            raf.readFully(row, 0, 16);
+            if (!Arrays.equals(row, 0, 16, zero, 0, 16))
+                println("    %08x  %s", pos, SffsTestUtil.hexdump(row, 0, 16));
         }
+
+        raf.readFully(row, 0, fileSizeLastRow);
+        if (!Arrays.equals(row, 0, fileSizeLastRow, zero, 0, fileSizeLastRow))
+            println("    %08x  %s", fileSizeFullRows, SffsTestUtil.hexdump(row, 0, fileSizeLastRow));
     }
 
     private void dumpFree(int blockSize) throws IOException {
