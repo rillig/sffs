@@ -24,13 +24,16 @@ Each block has the following on-disk structure:
 
 ~~~text
   offset   type       content
-       0   U32        type
-       4   U32        size of the block data
+       0   U32        magic number
+       4   U31        size of the block data
        8   U8[size]   data
 8 + size   U8[...]    zero padding to the next multiple of 16
 ~~~
 
-The first two fields form the `BlockHeader`.
+The first two fields form the `BlockHeader`:
+
+* The magic number specifies how to interpret the remaining bytes of the block.
+* The size specifies the size of the payload data in the block, excluding the 8 bytes from the block header.
 
 From the perspective of the allocation layer, there are 2 kinds of blocks: allocated or free.
 
@@ -128,10 +131,37 @@ Future directions:
 A regular file is a sequence of bytes. It has the following on-disk structure:
 
 ~~~text
-offset   type          content
-     0   BlockHeader   magic "SFre"
-     8   byte[size]    file content
+offset   type            content
+     0   BlockHeader     magic "SFre"
+     8   U63             file size
+    16   byte[size]      file content (for files that fit into a single block)
+    16   BlockRef[...]   file content in smaller chunks
 ~~~
+
+When a regular file is created, it starts as a "small file", consisting of a single block. The size of this block is
+unspecified.
+
+When a regular file becomes too large for its single block, it is converted to a "large file", and its data is split
+into chunks. The original block then contains a list of references to the chunks. The original block is kept at its
+location to keep its block number the same. This avoids updating the directory entry and keeps the block number stable,
+as long as the filesystem doesn't get defragmented or otherwise re-organized. This block number can thus serve as
+an [inode](https://en.wikipedia.org/wiki/Inode).
+
+All chunks of a large file must have the same block size.
+
+### File chunk
+
+When a regular file becomes too large for its single block, it is split into chunks. See [Regular file](#regular-file).
+
+~~~text
+offset   type          content
+     0   BlockHeader   magic "SFch"
+     8   zero[8]       padding
+    16   byte[...]     chunk data
+~~~
+
+The padding ensures that the actual chunk data is aligned on a 16-bytes boundary. This allows an implementation to align
+the chunk data on the natural boundary of the underlying storage medium (typically 512 or 4096 bytes).
 
 # Possible design extensions
 
