@@ -111,6 +111,10 @@ final class Storage implements AutoCloseable {
         return allocate(BlockType.REGULAR, 4096);
     }
 
+    Block allocateChunk(int chunkSize) throws IOException {
+        return allocate(BlockType.CHUNK, 8 + chunkSize);
+    }
+
     private Block allocate(BlockType type, int size) throws IOException {
         var offset = file.length();
         file.seek(offset);

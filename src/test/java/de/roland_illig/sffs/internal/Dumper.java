@@ -45,6 +45,7 @@ final class Dumper {
             case SUPER -> dumpSuper();
             case DIRECTORY -> dumpDirectory(blockSize);
             case REGULAR -> dumpRegular(blockSize);
+            case CHUNK -> dumpChunk(blockSize);
             case FREE -> dumpFree(blockSize);
             case NAME -> dumpName(blockSize);
         }
@@ -90,20 +91,12 @@ final class Dumper {
             return;
         }
 
-        var zero = new byte[16];
-        var row = new byte[16];
-        var fileSizeLastRow = (int) (fileSize % 16);
-        var fileSizeFullRows = fileSize - fileSizeLastRow;
+        dumpHex(fileSize);
+    }
 
-        for (long fileOff = 0; fileOff < fileSizeFullRows; fileOff += 16) {
-            raf.readFully(row, 0, 16);
-            if (!Arrays.equals(row, 0, 16, zero, 0, 16))
-                println("    %08x  %s", fileOff, SffsTestUtil.hexdump(row, 0, 16));
-        }
-
-        raf.readFully(row, 0, fileSizeLastRow);
-        if (!Arrays.equals(row, 0, fileSizeLastRow, zero, 0, fileSizeLastRow))
-            println("    %08x  %s", fileSizeFullRows, SffsTestUtil.hexdump(row, 0, fileSizeLastRow));
+    private void dumpChunk(int blockSize) throws IOException {
+        dumpPadding(raf.getFilePointer() + 8);
+        dumpHex(blockSize - 8);
     }
 
     private void dumpFree(int blockSize) throws IOException {
@@ -118,6 +111,23 @@ final class Dumper {
         var bytes = new byte[blockSize];
         raf.readFully(bytes);
         println("    %s", new String(bytes, StandardCharsets.UTF_8));
+    }
+
+    private void dumpHex(long size) throws IOException {
+        var zero = new byte[16];
+        var row = new byte[16];
+        var fileSizeLastRow = (int) (size % 16);
+        var fileSizeFullRows = size - fileSizeLastRow;
+
+        for (long fileOff = 0; fileOff < fileSizeFullRows; fileOff += 16) {
+            raf.readFully(row, 0, 16);
+            if (!Arrays.equals(row, 0, 16, zero, 0, 16))
+                println("    %08x  %s", fileOff, SffsTestUtil.hexdump(row, 0, 16));
+        }
+
+        raf.readFully(row, 0, fileSizeLastRow);
+        if (!Arrays.equals(row, 0, fileSizeLastRow, zero, 0, fileSizeLastRow))
+            println("    %08x  %s", fileSizeFullRows, SffsTestUtil.hexdump(row, 0, fileSizeLastRow));
     }
 
     private void dumpPadding(long end) throws IOException {

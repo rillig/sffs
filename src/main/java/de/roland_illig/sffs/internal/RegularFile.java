@@ -29,6 +29,27 @@ final class RegularFile {
         block.writeInt(8, chunkSize);
     }
 
+    Block getChunkForReading(int chunkIndex) throws IOException {
+        var ref = block.readRef(chunkPos(chunkIndex));
+        return ref != 0 ? block.ref(ref, BlockType.CHUNK) : null;
+    }
+
+    Block getChunkForWriting(int chunkIndex) throws IOException {
+        var ref = block.readRef(chunkPos(chunkIndex));
+        if (ref != 0) return block.ref(ref, BlockType.CHUNK);
+        var block = this.block.storage.allocateChunk(getChunkSize());
+        setChunk(chunkIndex, block);
+        return block;
+    }
+
+    private int chunkPos(int chunkIndex) {
+        return Math.addExact(24, Math.multiplyExact(chunkIndex, 8));
+    }
+
+    void setChunk(int chunkIndex, Block chunk) throws IOException {
+        block.writeRef(chunkPos(chunkIndex), chunk);
+    }
+
     int read(long offset, byte[] buf, int off, int len) throws IOException {
         SffsUtil.checkRange(off, len, Integer.MAX_VALUE);
         if (offset < 0)
@@ -47,18 +68,16 @@ final class RegularFile {
         var chunkSize = getChunkSize();
         var chunkStartIndex = Math.toIntExact(offset / chunkSize);
         var chunkEndIndex = Math.toIntExact(end / chunkSize);
-        var chunkRef = block.readRef(Math.multiplyExact(chunkStartIndex, 8));
-        var chunkBlock = block.ref(chunkRef, BlockType.CHUNK);
+        var chunkBlock = getChunkForReading(chunkStartIndex);
 
         if (chunkStartIndex == chunkEndIndex)
-            return chunkBlock.read((int) (offset % chunkSize), buf, off, len);
+            return readFromChunk(chunkStartIndex, (int) (offset % chunkSize), buf, off, len);
 
-        var totalRead = 0;
         var partOff = (int) (offset % chunkSize);
         var partLen = chunkSize - partOff;
 
         var n1 = readFromChunk(chunkStartIndex, partOff, buf, off, partLen);
-        totalRead += n1;
+        var totalRead = n1;
         if (n1 < partLen)
             return totalRead;
 
@@ -75,10 +94,8 @@ final class RegularFile {
     }
 
     private int readFromChunk(int chunkIndex, int chunkOffset, byte[] buf, int off, int len) throws IOException {
-        var chunkPos = Math.addExact(24, Math.multiplyExact(chunkIndex, 8));
-        var chunkRef = block.readRef(chunkPos);
-        var chunkBlock = block.ref(chunkRef, BlockType.CHUNK);
-        return chunkBlock.read(8 + chunkOffset, buf, off, len);
+        var chunk = getChunkForReading(chunkIndex);
+        return chunk != null ? chunk.read(8 + chunkOffset, buf, off, len) : 0;
     }
 
     void write(long offset, byte[] buf, int off, int len) throws IOException {
@@ -90,7 +107,7 @@ final class RegularFile {
             throw new IndexOutOfBoundsException(offset + len);
 
         if (getChunkSize() == 0 && end > block.getSize())
-            enlarge(offset + len);
+            enlarge();
 
         if (getChunkSize() == 0)
             block.write(24 + (int) offset, buf, off, len);
@@ -101,11 +118,43 @@ final class RegularFile {
             setSize(offset + len);
     }
 
-    private void writeLarge(long offset, byte[] buf, int off, int len) {
-        throw new UnsupportedOperationException();
+    private void writeLarge(long offset, byte[] buf, int off, int len) throws IOException {
+        var end = offset + len;
+        var chunkSize = getChunkSize();
+        var chunkStartIndex = Math.toIntExact(offset / chunkSize);
+        var chunkEndIndex = Math.toIntExact(end / chunkSize);
+
+        if (chunkStartIndex == chunkEndIndex) {
+            writeToChunk(chunkStartIndex, (int) (offset % chunkSize), buf, off, len);
+            return;
+        }
+
+        var partOff = (int) (offset % chunkSize);
+        var partLen = chunkSize - partOff;
+
+        writeToChunk(chunkStartIndex, partOff, buf, off, partLen);
+        var totalWritten = partLen;
+
+        for (var i = chunkStartIndex + 1; i < chunkEndIndex; i++) {
+            writeToChunk(i, 0, buf, off + totalWritten, chunkSize);
+            totalWritten += chunkSize;
+        }
+
+        writeToChunk(chunkEndIndex, 0, buf, off + totalWritten, len - totalWritten);
     }
 
-    private void enlarge(long fileSize) {
-        throw new UnsupportedOperationException();
+    private void writeToChunk(int chunkIndex, int chunkOffset, byte[] buf, int off, int len) throws IOException {
+        var chunk = getChunkForWriting(chunkIndex);
+        chunk.write(8 + chunkOffset, buf, off, len);
+    }
+
+    private void enlarge() throws IOException {
+        var data = new byte[Math.toIntExact(getSize())];
+        block.readFully(24, data, 0, data.length);
+        block.write(24, new byte[data.length], 0, data.length);
+
+        setChunkSize(4096);
+
+        writeLarge(0, data, 0, data.length);
     }
 }

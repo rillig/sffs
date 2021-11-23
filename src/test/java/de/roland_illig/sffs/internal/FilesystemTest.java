@@ -254,11 +254,10 @@ class FilesystemTest {
             file.write(digits, 0, digits.length);
 
             file.seek(32000);
-            // TODO: resizing a write-only file is not yet implemented
-            assertThatThrownBy(() -> file.write(digits, 2, 4))
-                    .isExactlyInstanceOf(UnsupportedOperationException.class);
+            file.write(digits, 2, 4);
 
-            file.seek(0x040E);
+            // write across two chunks
+            file.seek(0x0FFE);
             file.write(digits, 1, 6);
 
             file.close();
@@ -273,10 +272,18 @@ class FilesystemTest {
                 "block 7 type NAME size 4",
                 "    file",
                 "block 8 type REGULAR size 4096",
-                "    size 1044",
+                "    size 32004",
+                "    chunkSize 4096",
+                "    chunk 0 265",
+                "    chunk 1 779",
+                "    chunk 7 522",
+                "block 265 type CHUNK size 4104",
                 "    00000000  31 32 33 34 35 36 37 38  00 00 00 00 00 00 00 00",
-                "    00000400  00 00 00 00 00 00 00 00  00 00 00 00 00 00 32 33",
-                "    00000410  34 35 36 37"
+                "    00000ff0  00 00 00 00 00 00 00 00  00 00 00 00 00 00 32 33",
+                "block 522 type CHUNK size 4104",
+                "    00000d00  33 34 35 36 00 00 00 00  00 00 00 00 00 00 00 00",
+                "block 779 type CHUNK size 4104",
+                "    00000000  34 35 36 37 00 00 00 00  00 00 00 00 00 00 00 00"
         );
     }
 }
