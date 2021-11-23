@@ -133,12 +133,6 @@ offset   type          content
      8   byte[size]    file content
 ~~~
 
-Out of scope:
-
-* sffs1 does not support file permissions.
-* sffs1 does not support file attributes.
-* sffs1 does not support alternate data streams.
-
 # Possible design extensions
 
 * sparse files
@@ -150,6 +144,7 @@ Out of scope:
 * redundancy (RAID)
 * fault tolerance (like [in QR codes](https://en.wikipedia.org/wiki/QR_code#Error_correction))
 * large file support (>= 4 GB)
+* versioning
 * access control (owner, groups, permissions, ACLs)
 * encryption
 * compression
