@@ -39,11 +39,10 @@ The data of allocated blocks is not touched by the allocation layer.
 A free block has the following on-disk structure:
 
 ~~~text
-offset   type   content
-     0   U32    magic "SFfr"
-     4   U32    size of the block data
-     8   U64    block index of the next free block in the chain
-    16   any    undefined
+offset   type          content
+     0   BlockHeader   magic "SFfr"
+     8   BlockRef      the next free block in the chain, or 0
+    16   any           undefined
 ~~~
 
 After a block has been freed, its data may or may not be reset to 0.
@@ -55,7 +54,8 @@ the previous data. Since the magic value "SFfr" overwrites the previous magic va
 available when trying to restore accidentally deleted files.
 
 Providing an eternal storage or unlimited undeletion is out of the scope of sffs1. For this usage,
-[Git](https://git-scm.com/) may be a more appropriate tool.
+[Git](https://git-scm.com/) or another [versioning file system](https://en.wikipedia.org/wiki/Versioning_file_system)
+may be a more appropriate tool.
 
 ## Block layer
 
