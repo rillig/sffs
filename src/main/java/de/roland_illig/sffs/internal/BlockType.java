@@ -6,6 +6,7 @@ enum BlockType {
     SUPER("SF01"),
     DIRECTORY("SFdi"),
     REGULAR("SFre"),
+    CHUNK("SFch"),
     FREE("SFfr"),
     NAME("SFnm");
 

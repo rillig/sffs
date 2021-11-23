@@ -42,7 +42,20 @@ final class RegularFile {
             return readLarge(offset, buf, off, len);
     }
 
-    private int readLarge(long offset, byte[] buf, int off, int len) {
+    private int readLarge(long offset, byte[] buf, int off, int len) throws IOException {
+        var end = offset + len;
+        var chunkSize = getChunkSize();
+        var chunkStartIndex = Math.toIntExact(offset / chunkSize);
+        var chunkEndIndex = Math.toIntExact(end / chunkSize);
+        var chunkRef = block.readRef(Math.multiplyExact(chunkStartIndex, 8));
+        var chunkBlock = block.ref(chunkRef, BlockType.CHUNK);
+
+        if (chunkStartIndex == chunkEndIndex)
+            return chunkBlock.read(Math.toIntExact(offset % chunkSize), buf, off, len);
+
+        // TODO: read incomplete first chunk
+        // TODO: read complete middle chunks
+        // TODO: read incomplete last chunk
         throw new UnsupportedOperationException();
     }
 
