@@ -199,4 +199,47 @@ class FilesystemTest {
                 "    nextFree 0"
         );
     }
+
+    @Test
+    void rename(@TempDir File tmpdir) throws IOException {
+        var f = new File(tmpdir, "storage");
+
+        try (var fs = new Filesystem(f, "rw")) {
+            fs.mkdir(Path.of("Downloads"));
+            fs.mkdir(Path.of("Downloads", "2021"));
+
+            assertThatThrownBy(() -> fs.rename(Path.of("nonexistent"), "new name"))
+                    .isExactlyInstanceOf(FileNotFoundException.class)
+                    .hasMessage("nonexistent");
+
+            assertThatThrownBy(() -> fs.rename(Path.of("Downloads"), "Downloads"))
+                    .isExactlyInstanceOf(FileAlreadyExistsException.class)
+                    .hasMessage("Downloads");
+
+            fs.rename(Path.of("Downloads", "2021"), "new name");
+
+            fs.rename(Path.of("Downloads"), "Downloads (archived 2021)");
+        }
+
+        SffsTestUtil.assertTextDumpEquals(f,
+                "block 0 type SUPER size 16",
+                "    root 2 firstFree 7",
+                "block 2 type DIRECTORY size 72",
+                "    parent 2",
+                "    entry 0 name 21 object 9",
+                "block 7 type FREE size 9",
+                "    nextFree 14",
+                "block 9 type DIRECTORY size 72",
+                "    parent 2",
+                "    entry 0 name 20 object 15",
+                "block 14 type FREE size 4",
+                "    nextFree 0",
+                "block 15 type DIRECTORY size 72",
+                "    parent 9",
+                "block 20 type NAME size 8",
+                "    new name",
+                "block 21 type NAME size 25",
+                "    Downloads (archived 2021)"
+        );
+    }
 }

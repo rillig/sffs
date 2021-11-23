@@ -34,8 +34,10 @@ final class Filesystem implements AutoCloseable {
         throw new UnsupportedOperationException();
     }
 
-    void rename(Path path, String newName) {
-        throw new UnsupportedOperationException();
+    void rename(Path path, String newName) throws IOException {
+        var dir = lookup(path, -1);
+        if (dir == null) throw new FileNotFoundException(path.toString());
+        dir.rename(path, newName);
     }
 
     void move(Path oldPath, Path newPath) {
