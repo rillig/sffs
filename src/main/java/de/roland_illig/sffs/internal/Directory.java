@@ -44,6 +44,9 @@ final class Directory {
         block.writeRef(emptyPos + 8, dirBlock);
     }
 
+    /**
+     * Remove this directory from its parent directory.
+     */
     void remove(Path dir) throws IOException {
         for (int pos = 8, size = block.getSize(); pos < size; pos += 16)
             if (block.readRef(pos) != 0)
@@ -52,9 +55,12 @@ final class Directory {
         var parent = new Directory(block.ref(block.readRef(0)));
         for (int pos = 8, size = parent.block.getSize(); pos < size; pos += 16) {
             if (parent.block.readRef(pos + 8) == block.getRef()) {
-                block.ref(parent.block.readRef(pos), BlockType.NAME).free();
+                var nameRef = parent.block.readRef(pos);
+
                 parent.block.writeRef(pos, 0);
                 parent.block.writeRef(pos + 8, 0);
+
+                block.ref(nameRef, BlockType.NAME).free();
                 block.free();
                 return;
             }
