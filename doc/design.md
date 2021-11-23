@@ -141,6 +141,7 @@ Out of scope:
 
 # Possible design extensions
 
+* sparse files
 * symlinks
 * sockets
 * device nodes
