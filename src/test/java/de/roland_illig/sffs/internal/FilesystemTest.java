@@ -252,6 +252,16 @@ class FilesystemTest {
             var digits = "12345678".getBytes(StandardCharsets.UTF_8);
             var file = fs.open(Path.of("file"), "w");
             file.write(digits, 0, digits.length);
+
+            file.seek(32000);
+            // TODO: resizing a write-only file is not yet implemented
+            assertThatThrownBy(() -> file.write(digits, 2, 4))
+                    .isExactlyInstanceOf(IndexOutOfBoundsException.class)
+                    .hasMessageEndingWith(": 32004");
+
+            file.seek(0x040E);
+            file.write(digits, 1, 6);
+
             file.close();
         }
 
@@ -264,8 +274,10 @@ class FilesystemTest {
                 "block 7 type NAME size 4",
                 "    file",
                 "block 8 type REGULAR size 4096",
-                "    size 8",
-                "    00000000  31 32 33 34 35 36 37 38"
+                "    size 1044",
+                "    00000000  31 32 33 34 35 36 37 38  00 00 00 00 00 00 00 00",
+                "    00000400  00 00 00 00 00 00 00 00  00 00 00 00 00 00 32 33",
+                "    00000410  34 35 36 37"
         );
     }
 }

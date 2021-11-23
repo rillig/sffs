@@ -32,6 +32,7 @@ final class RegularFile {
             throw new IndexOutOfBoundsException(offset);
         if (8 + offset + len > block.getSize())
             throw new IndexOutOfBoundsException(offset + len);
+
         block.write(8 + (int) offset, buf, off, len);
         if (offset + len > getSize())
             setSize(offset + len);
