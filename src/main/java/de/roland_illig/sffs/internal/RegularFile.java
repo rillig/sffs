@@ -51,12 +51,34 @@ final class RegularFile {
         var chunkBlock = block.ref(chunkRef, BlockType.CHUNK);
 
         if (chunkStartIndex == chunkEndIndex)
-            return chunkBlock.read(Math.toIntExact(offset % chunkSize), buf, off, len);
+            return chunkBlock.read((int) (offset % chunkSize), buf, off, len);
 
-        // TODO: read incomplete first chunk
-        // TODO: read complete middle chunks
-        // TODO: read incomplete last chunk
-        throw new UnsupportedOperationException();
+        var totalRead = 0;
+        var partOff = (int) (offset % chunkSize);
+        var partLen = chunkSize - partOff;
+
+        var n1 = readFromChunk(chunkStartIndex, partOff, buf, off, partLen);
+        totalRead += n1;
+        if (n1 < partLen)
+            return totalRead;
+
+        for (var i = chunkStartIndex + 1; i < chunkEndIndex; i++) {
+            var n2 = readFromChunk(i, 0, buf, off + totalRead, chunkSize);
+            totalRead += n2;
+            if (n2 < chunkSize)
+                return totalRead;
+        }
+
+        var n3 = readFromChunk(chunkEndIndex, 0, buf, off + totalRead, len - totalRead);
+        totalRead += n3;
+        return totalRead;
+    }
+
+    private int readFromChunk(int chunkIndex, int chunkOffset, byte[] buf, int off, int len) throws IOException {
+        var chunkPos = Math.addExact(24, Math.multiplyExact(chunkIndex, 8));
+        var chunkRef = block.readRef(chunkPos);
+        var chunkBlock = block.ref(chunkRef, BlockType.CHUNK);
+        return chunkBlock.read(8 + chunkOffset, buf, off, len);
     }
 
     void write(long offset, byte[] buf, int off, int len) throws IOException {
