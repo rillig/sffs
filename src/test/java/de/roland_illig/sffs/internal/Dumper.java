@@ -28,14 +28,10 @@ final class Dumper {
     static List<String> dump(File f) throws IOException {
         try (var raf = new RandomAccessFile(f, "r")) {
             var dumper = new Dumper(raf);
-            dumper.dump();
+            while (dumper.raf.getFilePointer() < dumper.raf.length())
+                dumper.dumpBlock();
             return dumper.lines;
         }
-    }
-
-    void dump() throws IOException {
-        while (raf.getFilePointer() < raf.length())
-            dumpBlock();
     }
 
     private void dumpBlock() throws IOException {
