@@ -85,6 +85,32 @@ final class Directory {
         block.writeRef(oldPos, name);
     }
 
+    OpenFile open(Path file, String mode) throws IOException {
+        var name = file.getFileName().toString();
+
+        var emptyPos = -1;
+        for (int pos = 8, size = block.getSize(); pos < size; pos += 16) {
+            var nameRef = block.readRef(pos);
+            if (nameRef == 0 && emptyPos == -1)
+                emptyPos = pos;
+            if (name.equals(nameAtRef(nameRef)))
+                return new OpenFile(new RegularFile(block.ref(block.readRef(pos + 8))), mode);
+        }
+        if (mode.equals("r"))
+            throw new FileNotFoundException(file.toString());
+
+        if (emptyPos == -1) {
+            var enlarged = enlarge();
+            return enlarged.open(file, mode);
+        }
+
+        var nameBlock = block.storage.allocateName(name);
+        var fileBlock = block.storage.allocateFile();
+        block.writeRef(emptyPos, nameBlock);
+        block.writeRef(emptyPos + 8, fileBlock);
+        return new OpenFile(new RegularFile(fileBlock), mode);
+    }
+
     Directory lookupDir(String name) throws IOException {
         for (int pos = 8, size = block.getSize(); pos < size; pos += 16)
             if (name.equals(nameAtPos(pos)))

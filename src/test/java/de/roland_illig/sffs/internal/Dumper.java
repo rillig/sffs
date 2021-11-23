@@ -7,6 +7,7 @@ import java.io.RandomAccessFile;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
@@ -77,8 +78,16 @@ final class Dumper {
         }
     }
 
-    private void dumpRegular() {
-        throw new UnsupportedOperationException();
+    private void dumpRegular() throws IOException {
+        var size = raf.readLong();
+        println("    size %d", size);
+        var zero = new byte[16];
+        var row = new byte[16];
+        for (var pos = 16; pos < size; pos += 16) {
+            var n = raf.read(row, 0, size - pos > 16 ? 16 : (int) (size - pos));
+            if (!Arrays.equals(row, 0, n, zero, 0, n))
+                println("    %08x  %s", pos - 16, SffsTestUtil.hexdump(row, 0, n));
+        }
     }
 
     private void dumpFree(int blockSize) throws IOException {

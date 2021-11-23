@@ -27,6 +27,13 @@ final class RegularFile {
     }
 
     void write(long offset, byte[] buf, int off, int len) throws IOException {
-        throw new UnsupportedOperationException();
+        SffsUtil.checkRange(off, len, block.getSize());
+        if (offset < 0)
+            throw new IndexOutOfBoundsException(offset);
+        if (offset + 8 + len > block.getSize())
+            throw new IndexOutOfBoundsException(offset + len);
+        block.write((int) offset + 8, buf, off, len);
+        if (offset + len > getSize())
+            setSize(offset + len);
     }
 }

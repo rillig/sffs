@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Path;
@@ -240,6 +241,39 @@ class FilesystemTest {
                 "    new name",
                 "block 21 type NAME size 25",
                 "    Downloads (archived 2021)"
+        );
+    }
+
+    @Test
+    void open_write_close(@TempDir File tmpdir) throws IOException {
+        var f = new File(tmpdir, "storage");
+
+        try (var fs = new Filesystem(f, "rw")) {
+            var digits = "12345678".getBytes(StandardCharsets.UTF_8);
+            var file = fs.open(Path.of("file"), "w");
+            file.write(digits, 0, digits.length);
+            file.close();
+        }
+
+        SffsTestUtil.assertTextDumpEquals(f,
+                "block 0 type SUPER size 16",
+                "    root 2 firstFree 0",
+                "block 2 type DIRECTORY size 72",
+                "    parent 2",
+                "    entry 0 name 7 object 8",
+                "block 7 type NAME size 4",
+                "    file",
+                "block 8 type REGULAR size 4096",
+                "    size 8",
+                // FIXME: these digits are part of the file
+                "00000090: error: non-zero padding 0x31",
+                "00000091: error: non-zero padding 0x32",
+                "00000092: error: non-zero padding 0x33",
+                "00000093: error: non-zero padding 0x34",
+                "00000094: error: non-zero padding 0x35",
+                "00000095: error: non-zero padding 0x36",
+                "00000096: error: non-zero padding 0x37",
+                "00000097: error: non-zero padding 0x38"
         );
     }
 }

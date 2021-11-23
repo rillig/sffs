@@ -48,8 +48,10 @@ final class Filesystem implements AutoCloseable {
         throw new UnsupportedOperationException();
     }
 
-    RegularFile open(Path file) {
-        throw new UnsupportedOperationException();
+    OpenFile open(Path file, String mode) throws IOException {
+        var dir = lookup(file, -1);
+        if (dir == null) throw new FileNotFoundException(file.toString());
+        return dir.open(file, mode);
     }
 
     public void close() throws IOException {

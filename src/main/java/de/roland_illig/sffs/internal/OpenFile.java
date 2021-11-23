@@ -1,5 +1,7 @@
 package de.roland_illig.sffs.internal;
 
+import java.io.IOException;
+
 /**
  * A file that is currently opened.
  * <p>
@@ -11,19 +13,28 @@ package de.roland_illig.sffs.internal;
 final class OpenFile {
 
     private final RegularFile regularFile;
+    private final boolean canRead;
+    private final boolean canWrite;
 
     private long offset;
 
-    OpenFile(RegularFile regularFile) {
+    OpenFile(RegularFile regularFile, String mode) {
         this.regularFile = regularFile;
+        this.canRead = mode.equals("r");
+        this.canWrite = mode.equals("w");
+        // TODO: register the open file in the filesystem
     }
 
-    int read(byte[] buf, int off, int len) {
-        throw new UnsupportedOperationException();
+    int read(byte[] buf, int off, int len) throws IOException {
+        if (!canRead)
+            throw new IOException("write-only");
+        return regularFile.read(offset, buf, off, len);
     }
 
-    void write(byte[] buf, int off, int len) {
-        throw new UnsupportedOperationException();
+    void write(byte[] buf, int off, int len) throws IOException {
+        if (!canWrite)
+            throw new IOException("read-only");
+        regularFile.write(offset, buf, off, len);
     }
 
     void seek(long offset) {
@@ -32,5 +43,9 @@ final class OpenFile {
 
     long tell() {
         return offset;
+    }
+
+    void close() {
+        // TODO: unregister the open file from the filesystem
     }
 }
