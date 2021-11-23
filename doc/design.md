@@ -134,24 +134,31 @@ A regular file is a sequence of bytes. It has the following on-disk structure:
 offset   type            content
      0   BlockHeader     magic "SFre"
      8   U63             file size
-    16   byte[size]      file content (for files that fit into a single block)
-    16   BlockRef[...]   file content in smaller chunks
+    16   U31             chunk size (for large files) or 0 (for small files)
+    20   zero[12]        reserved
+    24   byte[...]       for small files: file content 
+    24   BlockRef[...]   for large files: the chunks containing the actual file data
 ~~~
 
 When a regular file is created, it starts as a "small file", consisting of a single block. The size of this block is
-unspecified.
+unspecified, and the file data is stored directly in this block.
 
 When a regular file becomes too large for its single block, it is converted to a "large file", and its data is split
-into chunks. The original block then contains a list of references to the chunks. The original block is kept at its
-location to keep its block number the same. This avoids updating the directory entry and keeps the block number stable,
-as long as the filesystem doesn't get defragmented or otherwise re-organized. This block number can thus serve as
-an [inode](https://en.wikipedia.org/wiki/Inode).
+into chunks. The original block then contains a list of references to the chunks.
 
-All chunks of a large file must have the same block size.
+> Rationale: The original block is kept at its location to keep its block number the same. This avoids updating the
+> directory entry and keeps the block number stable, as long as the filesystem doesn't get defragmented or otherwise
+> re-organized. This block number can thus serve as an [inode](https://en.wikipedia.org/wiki/Inode).
+>
+> There is no such guarantee for directories. The block number of a directory may change whenever a new entry is added
+> to the directory.
+
+All chunks of a large file must have the same block size. Each chunk stores the number of bytes given in the field
+"chunk size" in the main block.
 
 ### File chunk
 
-When a regular file becomes too large for its single block, it is split into chunks. See [Regular file](#regular-file).
+When a regular file becomes too large for its single block, it is split into chunks, see [Regular file](#regular-file).
 
 ~~~text
 offset   type          content
