@@ -256,8 +256,7 @@ class FilesystemTest {
             file.seek(32000);
             // TODO: resizing a write-only file is not yet implemented
             assertThatThrownBy(() -> file.write(digits, 2, 4))
-                    .isExactlyInstanceOf(IndexOutOfBoundsException.class)
-                    .hasMessageEndingWith(": 32004");
+                    .isExactlyInstanceOf(UnsupportedOperationException.class);
 
             file.seek(0x040E);
             file.write(digits, 1, 6);

@@ -36,6 +36,11 @@ final class Storage implements AutoCloseable {
         return file.readLong();
     }
 
+    int read(long offset, byte[] buf, int off, int len) throws IOException {
+        file.seek(offset);
+        return file.read(buf, off, len);
+    }
+
     void readFully(long offset, byte[] buf, int off, int len) throws IOException {
         file.seek(offset);
         file.readFully(buf, off, len);

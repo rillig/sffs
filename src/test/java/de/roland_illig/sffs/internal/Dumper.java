@@ -44,7 +44,7 @@ final class Dumper {
         switch (type) {
             case SUPER -> dumpSuper();
             case DIRECTORY -> dumpDirectory(blockSize);
-            case REGULAR -> dumpRegular();
+            case REGULAR -> dumpRegular(blockSize);
             case FREE -> dumpFree(blockSize);
             case NAME -> dumpName(blockSize);
         }
@@ -74,19 +74,31 @@ final class Dumper {
         }
     }
 
-    private void dumpRegular() throws IOException {
+    private void dumpRegular(int blockSize) throws IOException {
         var fileSize = raf.readLong();
+        var chunkSize = raf.readInt();
+        dumpPadding(raf.getFilePointer() + 12);
+
         println("    size %d", fileSize);
+        if (chunkSize != 0) {
+            println("    chunkSize %d", chunkSize);
+            for (var pos = 32; pos < blockSize; pos += 8) {
+                var chunkRef = raf.readLong();
+                if (chunkRef != 0)
+                    println("    chunk %d %d", (pos - 32) / 8, chunkRef);
+            }
+            return;
+        }
 
         var zero = new byte[16];
         var row = new byte[16];
         var fileSizeLastRow = (int) (fileSize % 16);
         var fileSizeFullRows = fileSize - fileSizeLastRow;
 
-        for (long pos = 0; pos < fileSizeFullRows; pos += 16) {
+        for (long fileOff = 0; fileOff < fileSizeFullRows; fileOff += 16) {
             raf.readFully(row, 0, 16);
             if (!Arrays.equals(row, 0, 16, zero, 0, 16))
-                println("    %08x  %s", pos, SffsTestUtil.hexdump(row, 0, 16));
+                println("    %08x  %s", fileOff, SffsTestUtil.hexdump(row, 0, 16));
         }
 
         raf.readFully(row, 0, fileSizeLastRow);

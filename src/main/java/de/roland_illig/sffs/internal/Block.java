@@ -29,8 +29,16 @@ final class Block {
         return size;
     }
 
+    int read(int pos, byte[] buf, int off, int len) throws IOException {
+        return storage.read(offset(pos, len), buf, off, len);
+    }
+
     void readFully(int pos, byte[] buf, int off, int len) throws IOException {
         storage.readFully(offset(pos, len), buf, off, len);
+    }
+
+    int readInt(int pos) throws IOException {
+        return storage.readInt(offset(pos, 4));
     }
 
     long readLong(int pos) throws IOException {
@@ -43,6 +51,10 @@ final class Block {
 
     void write(int pos, byte[] buf, int off, int len) throws IOException {
         storage.write(offset(pos, len), buf, off, len);
+    }
+
+    void writeInt(int pos, int v) throws IOException {
+        storage.writeInt(offset(pos, 4), v);
     }
 
     void writeLong(int pos, long v) throws IOException {
