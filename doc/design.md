@@ -32,12 +32,14 @@ Each block has the following on-disk structure:
 
 The first two fields form the `BlockHeader`:
 
-* The magic number specifies how to interpret the remaining bytes of the block.
+* The magic number specifies how to interpret the remaining bytes of the block. The most significant 16 bits of the
+  magic number are "SF", for all blocks.
 * The size specifies the size of the payload data in the block, excluding the 8 bytes from the block header.
 
-From the perspective of the allocation layer, there are 2 kinds of blocks: allocated or free.
+From the perspective of the allocation layer, there are 2 types of blocks: allocated or free.
 
-The data of allocated blocks is not touched by the allocation layer.
+The data of allocated blocks is not touched by the allocation layer. Free blocks may be split, merged or otherwise
+reorganized.
 
 A free block has the following on-disk structure:
 
@@ -64,7 +66,7 @@ may be a more appropriate tool.
 
 The block layer represents the filesystem as a directed graph of blocks.
 
-A block is identified by its offset in the underlying storage, divided by 16.
+A block is referenced by its offset in the underlying storage, divided by 16.
 
 ### Superblock
 
@@ -83,12 +85,12 @@ directory entries.
 
 ### Name
 
-A directory in a filesystem is a mapping from names to filesystem objects. A name is a sequence of Unicode code points,
-encoded as UTF-8.
+A name is a sequence of Unicode code points, encoded as UTF-8. Names are used in directory entries.
 
 Limitations:
 
 * The code points U+0000 "Null", U+002F "Solidus", U+005C "Reverse solidus" must not occur in a name.
+* The name must not be empty.
 * The name must neither be `.` (dot) nor `..` ([dot-dot](https://9p.io/sys/doc/lexnames.html)).
 
 The filesystem is case-sensitive.
@@ -104,7 +106,7 @@ A directory maps names to filesystem objects. It has the following on-disk struc
 
 ~~~text
 offset   type          content
-     0   BlockHeader   magic "SFde"
+     0   BlockHeader   magic "SFdi"
      8   BlockRef      parent directory
     16   BlockRef      name0
     24   BlockRef      object0
@@ -120,11 +122,6 @@ The directories form a tree, that is, there are no loops.
 The object of each directory entry may refer to a regular file or to another directory.
 
 In a freshly allocated directory block, all names and objects point to 0.
-
-Future directions:
-
-* There may be a SortedDirectory block that guarantees that the entries are sorted by code point.
-* There may be a HashedDirectory block that provides fast lookup, at the expense of requiring more on-disk space.
 
 ### Regular file
 
@@ -173,7 +170,9 @@ offset   type          content
 The padding ensures that the actual chunk data is aligned on a 16-bytes boundary. This allows an implementation to align
 the chunk data on the natural boundary of the underlying storage medium (typically 512 or 4096 bytes).
 
-# Possible design extensions
+# Future directions
+
+## Design enhancements
 
 * sparse files
 * symlinks
@@ -191,25 +190,24 @@ the chunk data on the natural boundary of the underlying storage medium (typical
 * alternate data streams
   * precomputed file hashes
   * precompressed data, [for use in web servers](https://httpd.apache.org/docs/2.4/mod/mod_brotli.html#precompressed)
+* optimized directories (using hash tables or binary search)
 
-# Reference implementation
-
-## Terminology
-
-* `offset` is measured in bytes
-* `ref` is a block reference, measured in units of 16 bytes
-* `pos` is an index into a block's data section
-
-## Quality of implementation
-
-* each API operation must be handled atomically
-
-## Future directions
-
-### Tools
+## Tools
 
 * defrag
 * fsck
 * compact
 * canonicalize (for digital signatures or [reproducible builds](https://reproducible-builds.org/))
 * check for steganography (unused bits, non-canonical content)
+
+# Reference implementation
+
+## Terminology
+
+* `offset` is the address of a single byte in the underlying storage
+* `ref` is a block reference, measured in units of 16 bytes
+* `pos` is an index into a block's data section
+
+## Quality of implementation
+
+* each API operation must be handled atomically
