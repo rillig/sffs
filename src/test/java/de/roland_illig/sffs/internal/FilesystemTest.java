@@ -321,8 +321,7 @@ class FilesystemTest {
                 // XXX: No need to allocate this empty chunk
                 "block 265 type CHUNK size 4104",
                 "block 522 type CHUNK size 4104",
-                // FIXME: must be 55 AA, not AA 55
-                "    00000ff0  00 00 00 00 00 00 00 00  00 00 00 00 00 00 AA 55"
+                "    00000ff0  00 00 00 00 00 00 00 00  00 00 00 00 00 00 55 AA"
         );
     }
 }

@@ -28,13 +28,16 @@ final class OpenFile {
     int read(byte[] buf, int off, int len) throws IOException {
         if (!canRead)
             throw new IOException("write-only");
-        return regularFile.read(offset, buf, off, len);
+        var n = regularFile.read(offset, buf, off, len);
+        offset += n;
+        return n;
     }
 
     void write(byte[] buf, int off, int len) throws IOException {
         if (!canWrite)
             throw new IOException("read-only");
         regularFile.write(offset, buf, off, len);
+        offset += len;
     }
 
     void seek(long offset) {
