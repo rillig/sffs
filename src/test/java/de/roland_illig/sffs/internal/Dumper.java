@@ -116,18 +116,18 @@ final class Dumper {
     private void dumpHex(long size) throws IOException {
         var zero = new byte[16];
         var row = new byte[16];
-        var fileSizeLastRow = (int) (size % 16);
-        var fileSizeFullRows = size - fileSizeLastRow;
+        var lastRowSize = (int) (size % 16);
+        var fullEnd = size - lastRowSize;
 
-        for (long fileOff = 0; fileOff < fileSizeFullRows; fileOff += 16) {
+        for (long off = 0; off < fullEnd; off += 16) {
             raf.readFully(row, 0, 16);
             if (!Arrays.equals(row, 0, 16, zero, 0, 16))
-                println("    %08x  %s", fileOff, SffsTestUtil.hexdump(row, 0, 16));
+                println("    %08x  %s", off, SffsTestUtil.hexdump(row, 0, 16));
         }
 
-        raf.readFully(row, 0, fileSizeLastRow);
-        if (!Arrays.equals(row, 0, fileSizeLastRow, zero, 0, fileSizeLastRow))
-            println("    %08x  %s", fileSizeFullRows, SffsTestUtil.hexdump(row, 0, fileSizeLastRow));
+        raf.readFully(row, 0, lastRowSize);
+        if (!Arrays.equals(row, 0, lastRowSize, zero, 0, lastRowSize))
+            println("    %08x  %s", fullEnd, SffsTestUtil.hexdump(row, 0, lastRowSize));
     }
 
     private void dumpPadding(long end) throws IOException {
