@@ -83,10 +83,10 @@ final class Dumper {
         println("    size %d", fileSize);
         if (chunkSize != 0) {
             println("    chunkSize %d", chunkSize);
-            for (var pos = 32; pos < blockSize; pos += 8) {
+            for (var pos = 24; pos < blockSize; pos += 8) {
                 var chunkRef = raf.readLong();
                 if (chunkRef != 0)
-                    println("    chunk %d %d", (pos - 32) / 8, chunkRef);
+                    println("    chunk %d %d", (pos - 24) / 8, chunkRef);
             }
             return;
         }

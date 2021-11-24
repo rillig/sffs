@@ -319,8 +319,8 @@ class FilesystemTest {
                 "    size 2084864",
                 "    chunkSize 4096",
                 "    chunk 0 265",
-                "00001086: error: non-zero padding 0x02", // FIXME
-                "00001087: error: non-zero padding 0x0a", // FIXME
+                "    chunk 508 522",
+                // XXX: No need to allocate this empty chunk
                 "block 265 type CHUNK size 4104",
                 "block 522 type CHUNK size 4104",
                 "    00000ff0  00 00 00 00 00 00 00 00  00 00 00 00 00 00 55 55"
