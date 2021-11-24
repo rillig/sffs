@@ -68,7 +68,6 @@ final class RegularFile {
         var chunkSize = getChunkSize();
         var chunkStartIndex = Math.toIntExact(offset / chunkSize);
         var chunkEndIndex = Math.toIntExact(end / chunkSize);
-        var chunkBlock = getChunkForReading(chunkStartIndex);
 
         if (chunkStartIndex == chunkEndIndex)
             return readFromChunk(chunkStartIndex, (int) (offset % chunkSize), buf, off, len);
@@ -88,14 +87,28 @@ final class RegularFile {
                 return totalRead;
         }
 
-        var n3 = readFromChunk(chunkEndIndex, 0, buf, off + totalRead, len - totalRead);
-        totalRead += n3;
+        if (len != totalRead) {
+            var n3 = readFromChunk(chunkEndIndex, 0, buf, off + totalRead, len - totalRead);
+            totalRead += n3;
+        }
         return totalRead;
     }
 
     private int readFromChunk(int chunkIndex, int chunkOffset, byte[] buf, int off, int len) throws IOException {
-        var chunk = getChunkForReading(chunkIndex);
-        return chunk != null ? chunk.read(8 + chunkOffset, buf, off, len) : 0;
+        try {
+            var chunk = getChunkForReading(chunkIndex);
+            if (chunk != null) return chunk.read(8 + chunkOffset, buf, off, len);
+        } catch (IndexOutOfBoundsException e) {
+            /* ignore */
+        }
+
+        var fileOffset = chunkIndex * getChunkSize() + chunkOffset;
+        var fileSize = getSize();
+        if (fileOffset + len < fileSize)
+            return len;
+        if (fileOffset < fileSize)
+            return (int) (fileSize - fileOffset);
+        return 0;
     }
 
     void write(long offset, byte[] buf, int off, int len) throws IOException {
