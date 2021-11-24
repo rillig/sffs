@@ -323,5 +323,15 @@ class FilesystemTest {
                 "block 522 type CHUNK size 4104",
                 "    00000ff0  00 00 00 00 00 00 00 00  00 00 00 00 00 00 55 AA"
         );
+
+        try (var fs = new Filesystem(f, "r")) {
+            try (var of = fs.open(Path.of("file"), "r")) {
+                SffsTestUtil.assertTextDumpEquals(of,
+                        // FIXME: The file _does_ contain non-zero rows.
+                        // FIXME: The file size is 509 * 4096
+                        "size 0x00001000"
+                );
+            }
+        }
     }
 }

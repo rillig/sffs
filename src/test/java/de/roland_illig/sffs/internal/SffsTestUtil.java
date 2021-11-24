@@ -10,6 +10,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Locale;
 
 class SffsTestUtil {
 
@@ -75,5 +77,20 @@ class SffsTestUtil {
     static void assertTextDumpEquals(File f, String... expectedTextRows) throws IOException {
         var actual = Dumper.dump(f);
         assertThat(actual).containsExactly(expectedTextRows);
+    }
+
+    static void assertTextDumpEquals(OpenFile f, String... expectedTextRows) throws IOException {
+        var lines = new ArrayList<String>();
+
+        var zero = new byte[16];
+        var row = new byte[16];
+        var off = 0L;
+        int n;
+        for (; (n = f.read(row, 0, row.length)) > 0; off += n)
+            if (!Arrays.equals(row, 0, n, zero, 0, n))
+                lines.add(String.format(Locale.ROOT, "0x%08x  %s", off, SffsTestUtil.hexdump(row, 0, n)));
+        lines.add(String.format(Locale.ROOT, "size 0x%08x", off));
+
+        assertThat(lines).containsExactly(expectedTextRows);
     }
 }

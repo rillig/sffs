@@ -10,7 +10,7 @@ import java.io.IOException;
  * On POSIX, open files can be removed, they just lose their name, but their data can still be read or written. When
  * the file is not open anymore, the file data gets deallocated as well.
  */
-final class OpenFile {
+final class OpenFile implements AutoCloseable {
 
     private final RegularFile regularFile;
     private final boolean canRead;
@@ -48,7 +48,8 @@ final class OpenFile {
         return offset;
     }
 
-    void close() {
+    @Override
+    public void close() {
         // TODO: unregister the open file from the filesystem
     }
 }
