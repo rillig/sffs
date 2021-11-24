@@ -292,17 +292,15 @@ class FilesystemTest {
         var f = new File(tmpdir, "storage");
 
         try (var fs = new Filesystem(f, "rw")) {
-            var buf = new byte[]{0x55};
+            var buf = new byte[]{0x55, (byte) 0xAA, 0x77};
             var file = fs.open(Path.of("file"), "w");
 
             file.seek(509 * 4096 - 1);
             file.write(buf, 0, 1);
 
-            // FIXME: There must be no difference between writing a single byte at $offset and writing 2 bytes at
-            //  $offset-1.
             file.seek(509 * 4096 - 2);
             file.write(buf, 0, 1);
-            file.write(buf, 0, 1);
+            file.write(buf, 1, 1);
 
             file.close();
         }
@@ -323,7 +321,8 @@ class FilesystemTest {
                 // XXX: No need to allocate this empty chunk
                 "block 265 type CHUNK size 4104",
                 "block 522 type CHUNK size 4104",
-                "    00000ff0  00 00 00 00 00 00 00 00  00 00 00 00 00 00 55 55"
+                // FIXME: must be 55 AA, not AA 55
+                "    00000ff0  00 00 00 00 00 00 00 00  00 00 00 00 00 00 AA 55"
         );
     }
 }
