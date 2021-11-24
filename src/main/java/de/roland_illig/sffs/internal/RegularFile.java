@@ -140,6 +140,7 @@ final class RegularFile {
             totalWritten += chunkSize;
         }
 
+        // TODO: len != totalWritten
         writeToChunk(chunkEndIndex, 0, buf, off + totalWritten, len - totalWritten);
     }
 

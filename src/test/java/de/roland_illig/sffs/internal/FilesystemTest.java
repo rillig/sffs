@@ -286,4 +286,46 @@ class FilesystemTest {
                 "    00000000  34 35 36 37 00 00 00 00  00 00 00 00 00 00 00 00"
         );
     }
+
+    @Test
+    void create_large_file(@TempDir File tmpdir) throws IOException {
+        var f = new File(tmpdir, "storage");
+
+        try (var fs = new Filesystem(f, "rw")) {
+            var buf = new byte[]{0x55};
+            var file = fs.open(Path.of("file"), "w");
+
+            file.seek(509 * 4096 - 1);
+            assertThatThrownBy(() -> file.write(buf, 0, 1))
+                    .isExactlyInstanceOf(IndexOutOfBoundsException.class)
+                    .hasMessageEndingWith(": 4104");
+
+            // FIXME: There must be no difference between writing a single byte at $offset and writing 2 bytes at
+            //  $offset-1.
+            file.seek(509 * 4096 - 2);
+            file.write(buf, 0, 1);
+            file.write(buf, 0, 1);
+
+            file.close();
+        }
+
+        SffsTestUtil.assertTextDumpEquals(f,
+                "block 0 type SUPER size 16",
+                "    root 2 firstFree 0",
+                "block 2 type DIRECTORY size 72",
+                "    parent 2",
+                "    entry 0 name 7 object 8",
+                "block 7 type NAME size 4",
+                "    file",
+                "block 8 type REGULAR size 4096",
+                "    size 2084863",
+                "    chunkSize 4096",
+                "    chunk 0 265",
+                "00001086: error: non-zero padding 0x02", // FIXME
+                "00001087: error: non-zero padding 0x0a", // FIXME
+                "block 265 type CHUNK size 4104",
+                "block 522 type CHUNK size 4104",
+                "    00000ff0  00 00 00 00 00 00 00 00  00 00 00 00 00 00 55 55"
+        );
+    }
 }
