@@ -140,8 +140,8 @@ final class RegularFile {
             totalWritten += chunkSize;
         }
 
-        // TODO: len != totalWritten
-        writeToChunk(chunkEndIndex, 0, buf, off + totalWritten, len - totalWritten);
+        if (totalWritten < len)
+            writeToChunk(chunkEndIndex, 0, buf, off + totalWritten, len - totalWritten);
     }
 
     private void writeToChunk(int chunkIndex, int chunkOffset, byte[] buf, int off, int len) throws IOException {

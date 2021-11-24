@@ -296,9 +296,7 @@ class FilesystemTest {
             var file = fs.open(Path.of("file"), "w");
 
             file.seek(509 * 4096 - 1);
-            assertThatThrownBy(() -> file.write(buf, 0, 1))
-                    .isExactlyInstanceOf(IndexOutOfBoundsException.class)
-                    .hasMessageEndingWith(": 4104");
+            file.write(buf, 0, 1);
 
             // FIXME: There must be no difference between writing a single byte at $offset and writing 2 bytes at
             //  $offset-1.
@@ -318,7 +316,7 @@ class FilesystemTest {
                 "block 7 type NAME size 4",
                 "    file",
                 "block 8 type REGULAR size 4096",
-                "    size 2084863",
+                "    size 2084864",
                 "    chunkSize 4096",
                 "    chunk 0 265",
                 "00001086: error: non-zero padding 0x02", // FIXME
