@@ -107,7 +107,7 @@ final class Directory {
         block.writeRef(oldPos, name);
     }
 
-    void create(Path path, String name, Block obj) throws IOException {
+    Directory create(Path path, String name, Block obj) throws IOException {
         var emptyPos = -1;
         for (int pos = 8, size = block.getSize(); pos < size; pos += 16) {
             var nameRef = block.readRef(pos);
@@ -119,13 +119,13 @@ final class Directory {
 
         if (emptyPos == -1) {
             var enlarged = enlarge();
-            enlarged.create(path, name, block);
-            return;
+            return enlarged.create(path, name, block);
         }
 
         var nameBlock = block.storage.allocateName(name);
         block.writeRef(emptyPos, nameBlock);
         block.writeRef(emptyPos + 8, obj);
+        return this;
     }
 
     OpenFile open(Path file, String mode) throws IOException {

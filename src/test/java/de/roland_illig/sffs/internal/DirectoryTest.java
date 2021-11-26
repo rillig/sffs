@@ -61,13 +61,9 @@ class DirectoryTest {
         );
 
         try (var fs = new Filesystem(f, "rw")) {
-            // FIXME
-            assertThatThrownBy(() -> fs.move(Path.of("2"), Path.of("5")))
-                    .isInstanceOf(WrongTypeException.class)
-                    .hasMessage("expected DIRECTORY, got FREE");
+            fs.move(Path.of("2"), Path.of("5"));
         }
 
-        // FIXME: must be the same as before
         SffsTestUtil.assertTextDumpEquals(f,
                 "block 0 type SUPER size 16",
                 "    root 31 firstFree 13",
@@ -92,7 +88,6 @@ class DirectoryTest {
                 "block 31 type DIRECTORY size 136",
                 "    parent 31",
                 "    entry 0 name 7 object 8",
-                "    entry 1 name 13 object 14",
                 "    entry 2 name 19 object 20",
                 "    entry 3 name 25 object 26",
                 "    entry 4 name 40 object 2",

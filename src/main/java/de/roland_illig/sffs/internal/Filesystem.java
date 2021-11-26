@@ -65,7 +65,10 @@ final class Filesystem implements de.roland_illig.sffs.Filesystem {
 
         checkAncestry(oldPath, old, newPath, newParent);
 
-        newParent.create(newPath, newName, old);
+        var newParentRef = newParent.block.getRef();
+        newParent = newParent.create(newPath, newName, old);
+        if (oldDir.block.getRef() == newParentRef)
+            oldDir = newParent;
         oldDir.remove(old);
         if (old.getType() == BlockType.DIRECTORY)
             new Directory(old).setParent(newParent.block);
