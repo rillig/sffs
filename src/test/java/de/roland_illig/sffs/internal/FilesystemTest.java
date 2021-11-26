@@ -620,8 +620,8 @@ class FilesystemTest {
 
         try (var fs = new Filesystem(f, "rw")) {
             assertThatThrownBy(() -> fs.delete(Path.of("dir", "subdir")))
-                    .isInstanceOf(IllegalStateException.class)
-                    .hasMessage("expecting REGULAR, got DIRECTORY");
+                    .isInstanceOf(WrongTypeException.class)
+                    .hasMessage("expected REGULAR, got DIRECTORY");
         }
 
         assertThat(Dumper.dump(f)).isEqualTo(before);

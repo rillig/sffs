@@ -84,7 +84,7 @@ final class Block {
 
     Block checkType(BlockType type) throws IOException {
         if (type != getType())
-            throw new IllegalStateException("expecting " + type + ", got " + getType());
+            throw new WrongTypeException(type, getType());
         return this;
     }
 

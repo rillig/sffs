@@ -91,7 +91,11 @@ final class Filesystem implements AutoCloseable {
     OpenFile open(Path file, String mode) throws IOException {
         var dir = lookup(file, -1);
         if (dir == null) throw new FileNotFoundException(file.toString());
-        return dir.open(file, mode);
+        try {
+            return dir.open(file, mode);
+        } catch (WrongTypeException e) {
+            throw new WrongTypeException(file, e);
+        }
     }
 
     public void close() throws IOException {
