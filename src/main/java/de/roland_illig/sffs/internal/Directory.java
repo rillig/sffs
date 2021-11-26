@@ -21,6 +21,10 @@ final class Directory {
         return block.readRef(0);
     }
 
+    void setParent(Block parent) throws IOException {
+        block.writeRef(0, parent.checkType(BlockType.DIRECTORY));
+    }
+
     void mkdir(Path dir) throws IOException {
         var name = dir.getFileName().toString();
         var emptyPos = -1;

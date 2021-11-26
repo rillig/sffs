@@ -61,6 +61,8 @@ final class Filesystem implements AutoCloseable {
 
         newParent.create(newPath, newName, old);
         oldDir.remove(old);
+        if (old.getType() == BlockType.DIRECTORY)
+            new Directory(old).setParent(newParent.block);
     }
 
     void delete(Path file) {
