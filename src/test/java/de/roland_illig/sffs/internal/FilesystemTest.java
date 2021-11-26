@@ -9,6 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Path;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -288,6 +289,7 @@ class FilesystemTest {
     }
 
     @Test
+    @Disabled("takes too long")
     void create_large_file(@TempDir File tmpdir) throws IOException {
         var f = new File(tmpdir, "storage");
 
