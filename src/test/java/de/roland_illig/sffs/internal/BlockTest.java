@@ -1,10 +1,12 @@
 package de.roland_illig.sffs.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -34,6 +36,26 @@ class BlockTest {
 
             // readFully must not read further.
             assertThat(SffsTestUtil.hexdump(buf, 4, 4)).isEqualTo("00 00 00 00");
+        }
+    }
+
+    @Test
+    void read_large_buffer(@TempDir File tmpdir) throws IOException {
+        var f = new File(tmpdir, "storage");
+
+        try (var fs = new Filesystem(f, "rw")) {
+            try (var file = fs.open(Path.of("small"), "w")) {
+                var buf = new byte[]{0x55};
+                file.write(buf, 0, 1);
+            }
+
+            try (var file = fs.open(Path.of("small"), "r")) {
+                var buf = new byte[16 * 1024];
+                // FIXME: Block.read
+                assertThatThrownBy(() -> file.read(buf, 0, buf.length))
+                        .isInstanceOf(IndexOutOfBoundsException.class)
+                        .hasMessageEndingWith(": 16408");
+            }
         }
     }
 }
