@@ -61,8 +61,8 @@ final class Block {
         storage.writeLong(offset(pos, 8), v);
     }
 
-    void writeRef(int pos, Block block) throws IOException {
-        writeRef(pos, block != null ? block.offset / 16 : 0);
+    void writeRef(int pos, Block obj) throws IOException {
+        writeRef(pos, obj != null ? obj.offset / 16 : 0);
     }
 
     void writeRef(int pos, long ref) throws IOException {
