@@ -1,7 +1,6 @@
 package de.roland_illig.sffs;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -14,7 +13,6 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Arrays;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.opentest4j.AssertionFailedError;
 
 class FilesystemRealWorldTest {
 
@@ -27,9 +25,7 @@ class FilesystemRealWorldTest {
         }
 
         try (var fs = Filesystem.open(storage, "rw")) {
-            assertThatThrownBy(() -> Files.walkFileTree(Path.of("."), new Verify(fs)))
-                    .isInstanceOf(AssertionFailedError.class);
-            // FIXME: expected: 3337 but was: 4096 for Directory.class
+            Files.walkFileTree(Path.of("."), new Verify(fs));
         }
     }
 

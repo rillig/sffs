@@ -45,7 +45,7 @@ class RegularFileTest {
                 var buf = new byte[16 * 1024];
                 file.seek(100_000);
                 var n = file.read(buf, 0, buf.length);
-                assertThat(n).isEqualTo(2400); // FIXME: must be 1
+                assertThat(n).isEqualTo(1);
                 assertThat(buf[0]).isEqualTo((byte) 0x55);
             }
         }
