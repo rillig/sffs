@@ -47,7 +47,7 @@ final class Directory {
     /**
      * Remove this directory from its parent directory.
      */
-    void remove(Path dir) throws IOException {
+    void removeMe(Path dir) throws IOException {
         for (int pos = 8, size = block.getSize(); pos < size; pos += 16)
             if (block.readRef(pos) != 0)
                 throw new DirectoryNotEmptyException(dir.toString());

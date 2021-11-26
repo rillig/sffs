@@ -27,7 +27,7 @@ final class Filesystem implements AutoCloseable {
     void rmdir(Path dir) throws IOException {
         var d = lookup(dir, 0);
         if (d == null) throw new FileNotFoundException(dir.toString());
-        d.remove(dir);
+        d.removeMe(dir);
     }
 
     Stream<DirectoryEntry> readdir(Path dir) {
