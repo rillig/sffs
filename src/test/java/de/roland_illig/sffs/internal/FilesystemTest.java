@@ -333,4 +333,42 @@ class FilesystemTest {
             }
         }
     }
+
+    @Test
+    void create_file_larger_than_large_file(@TempDir File tmpdir) throws IOException {
+        var f = new File(tmpdir, "storage");
+
+        try (var fs = new Filesystem(f, "rw")) {
+            var buf = new byte[]{0x55, (byte) 0xAA, 0x77};
+            var file = fs.open(Path.of("file"), "w");
+
+            file.seek(509 * 4096 - 1);
+            file.write(buf, 0, 1);
+
+            // TODO: support files larger than just 2 MB
+            assertThatThrownBy(() -> file.write(buf, 0, 1))
+                    .isInstanceOf(IndexOutOfBoundsException.class)
+                    .hasMessageEndingWith(": 4104");
+
+            file.close();
+        }
+
+        SffsTestUtil.assertTextDumpEquals(f,
+                "block 0 type SUPER size 16",
+                "    root 2 firstFree 0",
+                "block 2 type DIRECTORY size 72",
+                "    parent 2",
+                "    entry 0 name 7 object 8",
+                "block 7 type NAME size 4",
+                "    file",
+                "block 8 type REGULAR size 4096",
+                "    size 2084864",
+                "    chunkSize 4096",
+                "    chunk 0 265",
+                "    chunk 508 522",
+                "block 265 type CHUNK size 4104",
+                "block 522 type CHUNK size 4104",
+                "    00000ff0  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 55"
+        );
+    }
 }
