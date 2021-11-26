@@ -522,4 +522,53 @@ class FilesystemTest {
 
         assertThat(Dumper.dump(f)).isEqualTo(before);
     }
+
+    /**
+     * The root directory cannot be moved somewhere else.
+     */
+    @Test
+    void move_root_directory(@TempDir File tmpdir) throws IOException {
+        var f = new File(tmpdir, "storage");
+
+        try (var fs = new Filesystem(f, "rw")) {
+            fs.mkdir(Path.of("dir"));
+        }
+
+        var before = Dumper.dump(f);
+
+        // TODO: Make it possible to reach the root directory by the name ".".
+        try (var fs = new Filesystem(f, "rw")) {
+            assertThatThrownBy(() -> fs.move(Path.of("."), Path.of("dir")))
+                    .isInstanceOf(FileNotFoundException.class)
+                    .hasMessage(".");
+        }
+
+        assertThat(Dumper.dump(f)).isEqualTo(before);
+    }
+
+    /**
+     * A directory cannot be moved to some subdirectory of itself, as that would create
+     * <a href="https://www.youtube.com/watch?v=rALCtcMoMh8"
+     * title="Ray Stevens - &quot;I'm My Own Grandpa&quot; (Live on CabaRay Nashville)">a grandpa loop</a>.
+     */
+    @Test
+    void move_directory_to_own_subdirectory(@TempDir File tmpdir) throws IOException {
+        var f = new File(tmpdir, "storage");
+
+        try (var fs = new Filesystem(f, "rw")) {
+            fs.mkdir(Path.of("dir"));
+            fs.mkdir(Path.of("dir", "subdir"));
+            fs.mkdir(Path.of("dir", "subdir", "subsubdir"));
+        }
+
+        var before = Dumper.dump(f);
+
+        try (var fs = new Filesystem(f, "rw")) {
+            assertThatThrownBy(() -> fs.move(Path.of("dir"), Path.of("dir", "subdir")))
+                    .isInstanceOf(IOException.class)
+                    .hasMessageMatching("cannot move 'dir' to its own child directory 'dir.subdir'");
+        }
+
+        assertThat(Dumper.dump(f)).isEqualTo(before);
+    }
 }

@@ -59,10 +59,27 @@ final class Filesystem implements AutoCloseable {
             newName = oldPath.getFileName().toString();
         }
 
+        checkAncestry(oldPath, old, newPath, newParent);
+
         newParent.create(newPath, newName, old);
         oldDir.remove(old);
         if (old.getType() == BlockType.DIRECTORY)
             new Directory(old).setParent(newParent.block);
+    }
+
+    private void checkAncestry(Path oldPath, Block old, Path newPath, Directory newParent) throws IOException {
+        if (old.getType() != BlockType.DIRECTORY)
+            return;
+
+        var dir = newParent;
+        while (true) {
+            var parent = dir.getParent();
+            if (parent.block.getRef() == old.getRef())
+                throw new IOException("cannot move '" + oldPath + "' to its own child directory '" + newPath + "'");
+            if (parent.block.getRef() == dir.block.getRef())
+                return;
+            dir = parent;
+        }
     }
 
     void delete(Path file) {

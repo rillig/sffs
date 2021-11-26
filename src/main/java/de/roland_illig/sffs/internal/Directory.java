@@ -17,6 +17,10 @@ final class Directory {
         this.block = block.checkType(BlockType.DIRECTORY);
     }
 
+    Directory getParent() throws IOException {
+        return new Directory(block.ref(getParentRef()));
+    }
+
     long getParentRef() throws IOException {
         return block.readRef(0);
     }
