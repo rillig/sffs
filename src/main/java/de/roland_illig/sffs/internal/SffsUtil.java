@@ -3,11 +3,16 @@ package de.roland_illig.sffs.internal;
 final class SffsUtil {
 
     static void checkRange(int off, int len, int size) {
-        if (off < 0) throw new IndexOutOfBoundsException(off);
-        if (len < 0) throw new IndexOutOfBoundsException(len);
-        if (size < 0) throw new IndexOutOfBoundsException(size);
-        if (off + len < 0) throw new IndexOutOfBoundsException(off + len);
-        if (off + len > size) throw new IndexOutOfBoundsException(off + len);
+        if (off < 0)
+            throw new IndexOutOfBoundsException(off);
+        if (len < 0)
+            throw new IndexOutOfBoundsException(len);
+        if (size < 0)
+            throw new IndexOutOfBoundsException(size);
+        if (off + len < 0)
+            throw new IndexOutOfBoundsException(off + len);
+        if (off + len > size)
+            throw new IndexOutOfBoundsException(off + len);
     }
 
     static int padding(int pos) {
