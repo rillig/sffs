@@ -14,6 +14,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Arrays;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.opentest4j.AssertionFailedError;
 
 class FilesystemRealWorldTest {
 
@@ -27,9 +28,8 @@ class FilesystemRealWorldTest {
 
         try (var fs = Filesystem.open(storage, "rw")) {
             assertThatThrownBy(() -> Files.walkFileTree(Path.of("."), new Verify(fs)))
-                    .hasMessageContaining("337")
-                    .hasMessageContaining("4096");
-            // FIXME
+                    .isInstanceOf(AssertionFailedError.class);
+            // FIXME: expected: 3337 but was: 4096 for Directory.class
         }
     }
 
