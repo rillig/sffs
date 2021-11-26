@@ -405,6 +405,7 @@ class FilesystemTest {
                 "block 13 type FREE size 6",
                 "    nextFree 0",
                 "block 14 type DIRECTORY size 72",
+                // FIXME: must be 20, not 8
                 "    parent 8",
                 "block 19 type NAME size 2",
                 "    to",
@@ -487,6 +488,7 @@ class FilesystemTest {
                 "block 13 type FREE size 6",
                 "    nextFree 0",
                 "block 14 type DIRECTORY size 72",
+                // FIXME: must be 20, not 8
                 "    parent 8",
                 "block 19 type NAME size 2",
                 "    to",
