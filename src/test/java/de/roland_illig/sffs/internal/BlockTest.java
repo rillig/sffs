@@ -1,7 +1,6 @@
 package de.roland_illig.sffs.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.File;
 import java.io.IOException;
@@ -51,10 +50,8 @@ class BlockTest {
 
             try (var file = fs.open(Path.of("small"), "r")) {
                 var buf = new byte[16 * 1024];
-                // FIXME: Block.read
-                assertThatThrownBy(() -> file.read(buf, 0, buf.length))
-                        .isInstanceOf(IndexOutOfBoundsException.class)
-                        .hasMessageEndingWith(": 16408");
+                var n = file.read(buf, 0, buf.length);
+                assertThat(n).isEqualTo(4080); // FIXME: must be 1
             }
         }
     }

@@ -30,7 +30,7 @@ final class Block {
     }
 
     int read(int pos, byte[] buf, int off, int len) throws IOException {
-        return storage.read(offset(pos, len), buf, off, len);
+        return storage.read(offset(pos, 0), buf, off, len);
     }
 
     void readFully(int pos, byte[] buf, int off, int len) throws IOException {

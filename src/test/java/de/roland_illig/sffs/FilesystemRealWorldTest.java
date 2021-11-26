@@ -27,9 +27,9 @@ class FilesystemRealWorldTest {
 
         try (var fs = Filesystem.open(storage, "rw")) {
             assertThatThrownBy(() -> Files.walkFileTree(Path.of("."), new Verify(fs)))
-                    .isInstanceOf(IllegalStateException.class)
-                    .hasCauseInstanceOf(IndexOutOfBoundsException.class);
-            // .gitignore: Index out of range: 4120
+                    .hasMessageContaining("337")
+                    .hasMessageContaining("4096");
+            // FIXME
         }
     }
 
