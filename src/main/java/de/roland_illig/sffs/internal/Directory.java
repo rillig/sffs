@@ -67,6 +67,20 @@ final class Directory {
         }
     }
 
+    /**
+     * Remove the block from the directory entries, but don't free it.
+     */
+    void remove(Block obj) throws IOException {
+        for (int pos = 8, size = block.getSize(); pos < size; pos += 16) {
+            if (block.readRef(pos + 8) == obj.getRef()) {
+                block.ref(block.readRef(pos)).free();
+                block.writeRef(pos, 0);
+                block.writeRef(pos + 8, 0);
+                return;
+            }
+        }
+    }
+
     void rename(Path oldPath, String newName) throws IOException {
         var oldPos = -1;
         var oldName = oldPath.getFileName().toString();
@@ -83,6 +97,27 @@ final class Directory {
         var name = block.storage.allocateName(newName);
         block.ref(block.readRef(oldPos), BlockType.NAME).free();
         block.writeRef(oldPos, name);
+    }
+
+    void create(Path path, String name, Block obj) throws IOException {
+        var emptyPos = -1;
+        for (int pos = 8, size = block.getSize(); pos < size; pos += 16) {
+            var nameRef = block.readRef(pos);
+            if (nameRef == 0 && emptyPos == -1)
+                emptyPos = pos;
+            if (name.equals(nameAtRef(nameRef)))
+                throw new FileAlreadyExistsException(path.toString());
+        }
+
+        if (emptyPos == -1) {
+            var enlarged = enlarge();
+            enlarged.create(path, name, block);
+            return;
+        }
+
+        var nameBlock = block.storage.allocateName(name);
+        block.writeRef(emptyPos, nameBlock);
+        block.writeRef(emptyPos + 8, obj);
     }
 
     OpenFile open(Path file, String mode) throws IOException {
@@ -111,11 +146,16 @@ final class Directory {
         return new OpenFile(new RegularFile(fileBlock), mode);
     }
 
-    Directory lookupDir(String name) throws IOException {
+    Block lookup(String name) throws IOException {
         for (int pos = 8, size = block.getSize(); pos < size; pos += 16)
             if (name.equals(nameAtPos(pos)))
-                return new Directory(block.ref(block.readRef(pos + 8)));
+                return block.ref(block.readRef(pos + 8));
         return null;
+    }
+
+    Directory lookupDir(String name) throws IOException {
+        var entry = lookup(name);
+        return entry != null ? new Directory(entry) : null;
     }
 
     private Directory enlarge() throws IOException {

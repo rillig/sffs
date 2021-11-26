@@ -10,8 +10,8 @@ final class Superblock {
         this.block = new Block(storage, 0).checkType(BlockType.SUPER);
     }
 
-    void setRootDirectory(Block block) throws IOException {
-        this.block.writeRef(0, block);
+    void setRootDirectory(Block obj) throws IOException {
+        this.block.writeRef(0, obj);
     }
 
     Directory getRootDirectory() throws IOException {

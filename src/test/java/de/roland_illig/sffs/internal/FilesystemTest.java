@@ -1,5 +1,6 @@
 package de.roland_illig.sffs.internal;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.File;
@@ -372,5 +373,153 @@ class FilesystemTest {
                 "block 522 type CHUNK size 4104",
                 "    00000ff0  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 55"
         );
+    }
+
+    @Test
+    void move_to_existing_directory(@TempDir File tmpdir) throws IOException {
+        var f = new File(tmpdir, "storage");
+
+        try (var fs = new Filesystem(f, "rw")) {
+            fs.mkdir(Path.of("from"));
+            fs.mkdir(Path.of("from", "source"));
+            fs.mkdir(Path.of("to"));
+
+            // move to an existing directory, keeping the source name
+            fs.move(Path.of("from", "source"), Path.of("to"));
+        }
+
+        // As a further optimization, it is possible to move the name block 13
+        // over to the new directory instead of deleting it and creating the
+        // new block 25 with the same name.
+        SffsTestUtil.assertTextDumpEquals(f,
+                "block 0 type SUPER size 16",
+                "    root 2 firstFree 13",
+                "block 2 type DIRECTORY size 72",
+                "    parent 2",
+                "    entry 0 name 7 object 8",
+                "    entry 1 name 19 object 20",
+                "block 7 type NAME size 4",
+                "    from",
+                "block 8 type DIRECTORY size 72",
+                "    parent 2",
+                "block 13 type FREE size 6",
+                "    nextFree 0",
+                "block 14 type DIRECTORY size 72",
+                "    parent 8",
+                "block 19 type NAME size 2",
+                "    to",
+                "block 20 type DIRECTORY size 72",
+                "    parent 2",
+                "    entry 0 name 25 object 14",
+                "block 25 type NAME size 6",
+                "    source"
+        );
+    }
+
+    @Test
+    void move_rename_only(@TempDir File tmpdir) throws IOException {
+        var f = new File(tmpdir, "storage");
+
+        try (var fs = new Filesystem(f, "rw")) {
+            fs.mkdir(Path.of("from"));
+            fs.mkdir(Path.of("from", "source"));
+            fs.mkdir(Path.of("to"));
+
+            // move can also just rename a file
+            fs.move(Path.of("from", "source"), Path.of("from", "renamed"));
+        }
+
+        // As a further optimization, it is possible to move the name block 13
+        // over to the new directory instead of deleting it and creating the
+        // new block 25 with the same name.
+        SffsTestUtil.assertTextDumpEquals(f,
+                "block 0 type SUPER size 16",
+                "    root 2 firstFree 13",
+                "block 2 type DIRECTORY size 72",
+                "    parent 2",
+                "    entry 0 name 7 object 8",
+                "    entry 1 name 19 object 20",
+                "block 7 type NAME size 4",
+                "    from",
+                "block 8 type DIRECTORY size 72",
+                "    parent 2",
+                "    entry 1 name 25 object 14",
+                "block 13 type FREE size 6",
+                "    nextFree 0",
+                "block 14 type DIRECTORY size 72",
+                "    parent 8",
+                "block 19 type NAME size 2",
+                "    to",
+                "block 20 type DIRECTORY size 72",
+                "    parent 2",
+                "block 25 type NAME size 7",
+                "    renamed"
+        );
+    }
+
+    @Test
+    void move_and_rename(@TempDir File tmpdir) throws IOException {
+        var f = new File(tmpdir, "storage");
+
+        try (var fs = new Filesystem(f, "rw")) {
+            fs.mkdir(Path.of("from"));
+            fs.mkdir(Path.of("from", "source"));
+            fs.mkdir(Path.of("to"));
+
+            // move to another directory and at the same time rename
+            fs.move(Path.of("from", "source"), Path.of("to", "final"));
+        }
+
+        // As a further optimization, it is possible to move the name block 13
+        // over to the new directory instead of deleting it and creating the
+        // new block 25 with the same name.
+        SffsTestUtil.assertTextDumpEquals(f,
+                "block 0 type SUPER size 16",
+                "    root 2 firstFree 13",
+                "block 2 type DIRECTORY size 72",
+                "    parent 2",
+                "    entry 0 name 7 object 8",
+                "    entry 1 name 19 object 20",
+                "block 7 type NAME size 4",
+                "    from",
+                "block 8 type DIRECTORY size 72",
+                "    parent 2",
+                "block 13 type FREE size 6",
+                "    nextFree 0",
+                "block 14 type DIRECTORY size 72",
+                "    parent 8",
+                "block 19 type NAME size 2",
+                "    to",
+                "block 20 type DIRECTORY size 72",
+                "    parent 2",
+                "    entry 0 name 25 object 14",
+                "block 25 type NAME size 5",
+                "    final"
+        );
+    }
+
+    @Test
+    void move_to_existing_regular_file(@TempDir File tmpdir) throws IOException {
+        var f = new File(tmpdir, "storage");
+
+        try (var fs = new Filesystem(f, "rw")) {
+            fs.mkdir(Path.of("from"));
+            fs.mkdir(Path.of("from", "source"));
+            fs.mkdir(Path.of("to"));
+
+            var ignored = fs.open(Path.of("to", "file"), "w");
+            ignored.close();
+        }
+
+        var before = Dumper.dump(f);
+
+        try (var fs = new Filesystem(f, "rw")) {
+            // try to move to an existing regular file
+            assertThatThrownBy(() -> fs.move(Path.of("from"), Path.of("to", "file")))
+                    .isInstanceOf(FileAlreadyExistsException.class)
+                    .hasMessage(Path.of("to", "file").toString());
+        }
+
+        assertThat(Dumper.dump(f)).isEqualTo(before);
     }
 }

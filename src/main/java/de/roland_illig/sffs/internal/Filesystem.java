@@ -40,8 +40,27 @@ final class Filesystem implements AutoCloseable {
         dir.rename(path, newName);
     }
 
-    void move(Path oldPath, Path newPath) {
-        throw new UnsupportedOperationException();
+    void move(Path oldPath, Path newPath) throws IOException {
+        var oldDir = lookup(oldPath, -1);
+        if (oldDir == null)
+            throw fileNotFound(oldPath.getParent());
+
+        var old = oldDir.lookup(oldPath.getFileName().toString());
+        if (old == null)
+            throw fileNotFound(oldPath);
+
+        var newParent = lookup(newPath, -1);
+        if (newParent == null)
+            throw fileNotFound(newPath);
+        var newName = newPath.getFileName().toString();
+        var newEntry = newParent.lookup(newName);
+        if (newEntry != null && newEntry.getType() == BlockType.DIRECTORY) {
+            newParent = new Directory(newEntry);
+            newName = oldPath.getFileName().toString();
+        }
+
+        newParent.create(newPath, newName, old);
+        oldDir.remove(old);
     }
 
     void delete(Path file) {
@@ -64,5 +83,9 @@ final class Filesystem implements AutoCloseable {
         for (int i = 0, n = path.getNameCount() + rtrim; cwd != null && i < n; i++)
             cwd = cwd.lookupDir(path.getName(i).toString());
         return cwd;
+    }
+
+    static FileNotFoundException fileNotFound(Path path) {
+        return new FileNotFoundException(path.toString());
     }
 }
