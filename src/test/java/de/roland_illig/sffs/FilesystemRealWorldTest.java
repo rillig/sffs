@@ -1,11 +1,8 @@
 package de.roland_illig.sffs;
 
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.file.FileSystemException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -21,10 +18,7 @@ class FilesystemRealWorldTest {
         var storage = new File(tmpdir, "storage");
 
         try (var fs = Filesystem.open(storage, "rw")) {
-            assertThatThrownBy(() -> Files.walkFileTree(Path.of("."), new CopyIn(fs)))
-                    .isInstanceOf(FileSystemException.class)
-                    .hasMessageEndingWith("expected DIRECTORY, got REGULAR");
-            // see Directory.enlarge
+            Files.walkFileTree(Path.of("."), new CopyIn(fs));
         }
     }
 

@@ -197,8 +197,9 @@ final class Directory {
         }
 
         for (int pos = 8, size = block.getSize(); pos < size; pos += 16) {
-            var childDir = block.ref(block.readRef(pos + 8), BlockType.DIRECTORY);
-            childDir.writeRef(0, large);
+            var child = block.ref(block.readRef(pos + 8));
+            if (child.getType() == BlockType.DIRECTORY)
+                new Directory(child).setParent(large);
         }
 
         var superblock = new Superblock(block.storage);
