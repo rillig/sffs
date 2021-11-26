@@ -67,9 +67,9 @@ final class Dumper {
             var nameRef = raf.readLong();
             var objRef = raf.readLong();
             if (nameRef == 0 && objRef != 0)
-                println("%08x: error: nonempty directory entry %d", objRef);
+                println("%08x: error: nonempty directory entry %d", objRef, pos / 16);
             if (nameRef != 0 && objRef == 0)
-                println("%08x: error: empty directory entry %d", objRef);
+                println("%08x: error: empty directory entry %d", objRef, pos / 16);
             if (nameRef != 0 && objRef != 0)
                 println("    entry %d name %d object %d", pos / 16, nameRef, objRef);
         }

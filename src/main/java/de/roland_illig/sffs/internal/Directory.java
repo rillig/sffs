@@ -166,6 +166,23 @@ final class Directory {
         return entry != null ? new Directory(entry) : null;
     }
 
+    void delete(Path file) throws IOException {
+        var name = file.getFileName().toString();
+        for (int pos = 8, size = block.getSize(); pos < size; pos += 16) {
+            if (name.equals(nameAtPos(pos))) {
+                var obj = block.ref(block.readRef(pos + 8));
+                var reg = new RegularFile(obj);
+
+                block.ref(block.readRef(pos)).free();
+                block.writeRef(pos, 0);
+
+                reg.delete();
+                return;
+            }
+        }
+        throw new FileNotFoundException(file.toString());
+    }
+
     private Directory enlarge() throws IOException {
         var large = block.storage.allocateDirectory(2 * (block.getSize() / 16), getParentRef());
 

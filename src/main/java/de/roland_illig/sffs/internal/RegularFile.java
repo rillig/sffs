@@ -9,8 +9,8 @@ final class RegularFile {
 
     private final Block block;
 
-    RegularFile(Block block) {
-        this.block = block;
+    RegularFile(Block block) throws IOException {
+        this.block = block.checkType(BlockType.REGULAR);
     }
 
     long getSize() throws IOException {
@@ -129,6 +129,16 @@ final class RegularFile {
 
         if (offset + len > getSize())
             setSize(offset + len);
+    }
+
+    void delete() throws IOException {
+        if (getChunkSize() != 0) {
+            for (int pos = 24, size = block.getSize(); pos < size; pos += 8) {
+                var ref = block.readRef(pos);
+                if (ref != 0) block.ref(ref).free();
+            }
+        }
+        block.free();
     }
 
     private void writeLarge(long offset, byte[] buf, int off, int len) throws IOException {

@@ -10,11 +10,20 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Path;
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 class FilesystemTest {
+
+    @BeforeEach
+    void setUp() {
+        // JUnit 5 creates awfully long stack traces (around 100 elements),
+        // and AssertJ strips off the uninteresting parts of it.
+        Assertions.setMaxStackTraceElementsDisplayed(200);
+    }
 
     @Test
     void init(@TempDir File tmpdir) throws IOException {
@@ -570,5 +579,139 @@ class FilesystemTest {
         }
 
         assertThat(Dumper.dump(f)).isEqualTo(before);
+    }
+
+    @Test
+    void delete_nonexistent(@TempDir File tmpdir) throws IOException {
+        var f = new File(tmpdir, "storage");
+
+        try (var fs = new Filesystem(f, "rw")) {
+            fs.mkdir(Path.of("dir"));
+            fs.mkdir(Path.of("dir", "subdir"));
+        }
+
+        var before = Dumper.dump(f);
+
+        try (var fs = new Filesystem(f, "rw")) {
+            assertThatThrownBy(() -> fs.delete(Path.of("dir", "subdir", "nonexistent")))
+                    .isInstanceOf(FileNotFoundException.class)
+                    .hasMessageMatching("dir.subdir.nonexistent");
+        }
+
+        try (var fs = new Filesystem(f, "rw")) {
+            assertThatThrownBy(() -> fs.delete(Path.of("nonexistent")))
+                    .isInstanceOf(FileNotFoundException.class)
+                    .hasMessage("nonexistent");
+        }
+
+        assertThat(Dumper.dump(f)).isEqualTo(before);
+    }
+
+    @Test
+    void delete_directory(@TempDir File tmpdir) throws IOException {
+        var f = new File(tmpdir, "storage");
+
+        try (var fs = new Filesystem(f, "rw")) {
+            fs.mkdir(Path.of("dir"));
+            fs.mkdir(Path.of("dir", "subdir"));
+        }
+
+        var before = Dumper.dump(f);
+
+        try (var fs = new Filesystem(f, "rw")) {
+            assertThatThrownBy(() -> fs.delete(Path.of("dir", "subdir")))
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessage("expecting REGULAR, got DIRECTORY");
+        }
+
+        assertThat(Dumper.dump(f)).isEqualTo(before);
+    }
+
+    @Test
+    void delete_small_file(@TempDir File tmpdir) throws IOException {
+        var f = new File(tmpdir, "storage");
+
+        try (var fs = new Filesystem(f, "rw")) {
+            try (var file = fs.open(Path.of("small"), "w")) {
+                file.write(new byte[]{0x55}, 0, 1);
+            }
+        }
+
+        SffsTestUtil.assertTextDumpEquals(f,
+                "block 0 type SUPER size 16",
+                "    root 2 firstFree 0",
+                "block 2 type DIRECTORY size 72",
+                "    parent 2",
+                "    entry 0 name 7 object 8",
+                "block 7 type NAME size 5",
+                "    small",
+                "block 8 type REGULAR size 4096",
+                "    size 1",
+                "    00000000  55"
+        );
+
+        try (var fs = new Filesystem(f, "rw")) {
+            fs.delete(Path.of("small"));
+        }
+
+        SffsTestUtil.assertTextDumpEquals(f,
+                "block 0 type SUPER size 16",
+                "    root 2 firstFree 7",
+                "block 2 type DIRECTORY size 72",
+                "    parent 2",
+                "00000008: error: nonempty directory entry 0",
+                "block 7 type FREE size 5",
+                "    nextFree 0"
+        );
+    }
+
+    @Test
+    void delete_large_file(@TempDir File tmpdir) throws IOException {
+        var f = new File(tmpdir, "storage");
+
+        try (var fs = new Filesystem(f, "rw")) {
+            try (var file = fs.open(Path.of("large"), "w")) {
+                file.write(new byte[]{0x55}, 0, 1);
+                file.seek(0x0001_0000);
+                file.write(new byte[]{0x55}, 0, 1);
+            }
+        }
+
+        SffsTestUtil.assertTextDumpEquals(f,
+                "block 0 type SUPER size 16",
+                "    root 2 firstFree 0",
+                "block 2 type DIRECTORY size 72",
+                "    parent 2",
+                "    entry 0 name 7 object 8",
+                "block 7 type NAME size 5",
+                "    large",
+                "block 8 type REGULAR size 4096",
+                "    size 65537",
+                "    chunkSize 4096",
+                "    chunk 0 265",
+                "    chunk 16 522",
+                "block 265 type CHUNK size 4104",
+                "    00000000  55 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00",
+                "block 522 type CHUNK size 4104",
+                "    00000000  55 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00"
+        );
+
+        try (var fs = new Filesystem(f, "rw")) {
+            fs.delete(Path.of("large"));
+        }
+
+        SffsTestUtil.assertTextDumpEquals(f,
+                "block 0 type SUPER size 16",
+                "    root 2 firstFree 8",
+                "block 2 type DIRECTORY size 72",
+                "    parent 2",
+                "00000008: error: nonempty directory entry 0",
+                "block 7 type FREE size 5",
+                "    nextFree 0",
+                "block 8 type FREE size 4096",
+                "    nextFree 265",
+                "block 265 type FREE size 4104",
+                "    nextFree 7"
+        );
     }
 }

@@ -82,8 +82,10 @@ final class Filesystem implements AutoCloseable {
         }
     }
 
-    void delete(Path file) {
-        throw new UnsupportedOperationException();
+    void delete(Path file) throws IOException {
+        var parent = lookup(file, -1);
+        if (parent == null) throw fileNotFound(file.getParent());
+        parent.delete(file);
     }
 
     OpenFile open(Path file, String mode) throws IOException {
