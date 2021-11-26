@@ -56,10 +56,15 @@ final class RegularFile {
             throw new IndexOutOfBoundsException(offset);
         if (24 + offset + len > Integer.MAX_VALUE)
             throw new IndexOutOfBoundsException(offset + len);
+        if (len == 0)
+            return 0;
 
-        if (getChunkSize() == 0)
-            return block.read(24 + (int) offset, buf, off, len);
-        else
+        if (getChunkSize() == 0) {
+            var maxLen = Math.toIntExact(Math.min(len, getSize() - offset));
+            if (maxLen == 0)
+                return -1;
+            return block.read(24 + (int) offset, buf, off, maxLen);
+        } else
             return readLarge(offset, buf, off, len);
     }
 

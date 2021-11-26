@@ -106,9 +106,9 @@ class FilesystemRealWorldTest {
                         nOuter = outer.read(outerBuf, 0, outerBuf.length);
                         nInner = inner.read(innerBuf, 0, innerBuf.length);
                         assertThat(nInner).isEqualTo(nOuter);
-                        assertThat(Arrays.copyOf(outerBuf, nOuter)).isEqualTo(Arrays.copyOf(innerBuf, nInner));
-                        if (nOuter == 0)
+                        if (nOuter <= 0)
                             break;
+                        assertThat(Arrays.copyOf(outerBuf, nOuter)).isEqualTo(Arrays.copyOf(innerBuf, nInner));
                     }
                 }
             } catch (IndexOutOfBoundsException e) {
