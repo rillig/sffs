@@ -35,13 +35,13 @@ class RegularFileTest {
         var f = new File(tmpdir, "storage");
 
         try (var fs = new Filesystem(f, "rw")) {
-            try (var file = fs.open(Path.of("small"), "w")) {
+            try (var file = fs.open(Path.of("large"), "w")) {
                 var buf = new byte[]{0x55};
                 file.seek(100_000);
                 file.write(buf, 0, 1);
             }
 
-            try (var file = fs.open(Path.of("small"), "r")) {
+            try (var file = fs.open(Path.of("large"), "r")) {
                 var buf = new byte[16 * 1024];
                 file.seek(100_000);
                 var n = file.read(buf, 0, buf.length);
