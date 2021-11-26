@@ -7,7 +7,7 @@ import java.io.RandomAccessFile;
 import java.nio.file.Path;
 import java.util.stream.Stream;
 
-final class Filesystem implements AutoCloseable {
+final class Filesystem implements de.roland_illig.sffs.Filesystem {
 
     private final Storage storage;
 
@@ -18,13 +18,15 @@ final class Filesystem implements AutoCloseable {
         this.storage = new Storage(new RandomAccessFile(f, mode));
     }
 
-    void mkdir(Path dir) throws IOException {
+    @Override
+    public void mkdir(Path dir) throws IOException {
         var parent = lookup(dir, -1);
         if (parent == null) throw new FileNotFoundException(dir.getParent().toString());
         parent.mkdir(dir);
     }
 
-    void rmdir(Path dir) throws IOException {
+    @Override
+    public void rmdir(Path dir) throws IOException {
         var d = lookup(dir, 0);
         if (d == null) throw new FileNotFoundException(dir.toString());
         d.removeMe(dir);
@@ -34,13 +36,15 @@ final class Filesystem implements AutoCloseable {
         throw new UnsupportedOperationException();
     }
 
-    void rename(Path path, String newName) throws IOException {
+    @Override
+    public void rename(Path path, String newName) throws IOException {
         var dir = lookup(path, -1);
         if (dir == null) throw new FileNotFoundException(path.toString());
         dir.rename(path, newName);
     }
 
-    void move(Path oldPath, Path newPath) throws IOException {
+    @Override
+    public void move(Path oldPath, Path newPath) throws IOException {
         var oldDir = lookup(oldPath, -1);
         if (oldDir == null)
             throw fileNotFound(oldPath.getParent());
@@ -82,13 +86,15 @@ final class Filesystem implements AutoCloseable {
         }
     }
 
-    void delete(Path file) throws IOException {
+    @Override
+    public void delete(Path file) throws IOException {
         var parent = lookup(file, -1);
         if (parent == null) throw fileNotFound(file.getParent());
         parent.delete(file);
     }
 
-    OpenFile open(Path file, String mode) throws IOException {
+    @Override
+    public OpenFile open(Path file, String mode) throws IOException {
         var dir = lookup(file, -1);
         if (dir == null) throw new FileNotFoundException(file.toString());
         try {
@@ -98,6 +104,7 @@ final class Filesystem implements AutoCloseable {
         }
     }
 
+    @Override
     public void close() throws IOException {
         storage.close();
     }
