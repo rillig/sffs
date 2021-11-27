@@ -61,7 +61,7 @@ final class RegularFile {
         if (len == 0)
             return 0;
         var maxLen = Math.toIntExact(Math.min(len, getSize() - offset));
-        if (maxLen == 0)
+        if (maxLen <= 0)
             return -1;
 
         if (getChunkSize() == 0)

@@ -114,8 +114,7 @@ class RegularFileTest {
                         .hasMessageEndingWith(": -1");
 
                 file.seek(Integer.MAX_VALUE - 25);
-                // FIXME: Must be -1, not some large negative number.
-                assertThat(file.read(new byte[1], 0, 1)).isEqualTo(-2147383621);
+                assertThat(file.read(new byte[1], 0, 1)).isEqualTo(-1);
 
                 // XXX: It feels somewhat arbitrary to limit the file offset to 24 below
                 //  Integer.MAX_VALUE. Why exactly 24, from an API point of view?
