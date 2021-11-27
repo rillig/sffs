@@ -39,17 +39,10 @@ class FilesystemRealWorldTest {
 
         @Override
         public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-            dir = dir.normalize();
-
-            // skip hidden files, especially .git, since that might contain files over 2 MB.
-            var name = dir.getFileName().toString();
-            if (name.equals(""))
-                return FileVisitResult.CONTINUE;
-            if (name.startsWith("."))
-                return FileVisitResult.SKIP_SUBTREE;
-
-            fs.mkdir(dir.normalize());
-            return FileVisitResult.CONTINUE;
+            var result = skipHidden(dir);
+            if (result == FileVisitResult.CONTINUE && !dir.equals(Path.of(".")))
+                fs.mkdir(dir.normalize());
+            return result;
         }
 
         @Override
@@ -77,15 +70,8 @@ class FilesystemRealWorldTest {
         }
 
         @Override
-        public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-            // skip hidden files, especially .git, since that might contain files over 2 MB.
-            var name = dir.normalize().getFileName().toString();
-            if (name.equals(""))
-                return FileVisitResult.CONTINUE;
-            if (name.startsWith("."))
-                return FileVisitResult.SKIP_SUBTREE;
-
-            return FileVisitResult.CONTINUE;
+        public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
+            return skipHidden(dir);
         }
 
         @Override
@@ -111,5 +97,16 @@ class FilesystemRealWorldTest {
                 throw new IllegalStateException(file.toString(), e);
             }
         }
+    }
+
+    private static FileVisitResult skipHidden(Path dir) {
+        // skip hidden directories, especially .git, since that might contain files over 2 MB.
+        var name = dir.getFileName().toString();
+        if (name.equals("."))
+            return FileVisitResult.CONTINUE;
+        if (name.startsWith("."))
+            return FileVisitResult.SKIP_SUBTREE;
+
+        return FileVisitResult.CONTINUE;
     }
 }
