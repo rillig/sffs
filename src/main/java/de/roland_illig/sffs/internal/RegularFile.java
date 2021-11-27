@@ -1,6 +1,7 @@
 package de.roland_illig.sffs.internal;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 /**
  * A sequence of bytes on the disk.
@@ -104,6 +105,8 @@ final class RegularFile {
         try {
             var chunk = getChunkForReading(chunkIndex);
             if (chunk != null) return chunk.read(8 + chunkOffset, buf, off, len);
+            Arrays.fill(buf, off, off + len, (byte) 0);
+            return len;
         } catch (IndexOutOfBoundsException e) {
             /* ignore */
         }

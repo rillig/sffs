@@ -56,24 +56,18 @@ class RegularFileTest {
                 n = file.read(buf, 0, buf.length);
                 assertThat(n).isEqualTo(buf.length);
                 assertThat(SffsTestUtil.hexdumpBrief(buf)).containsExactly(
-                        // FIXME: Data from null chunks must be overwritten with zero
-                        "00001380  00 00 00 00 00 00 00 00  61 00 00 00 00 00 00 00",
-                        "00003a90  00 00 00 00 00 00 00 00  62 00 00 00 00 00 00 00"
+                        /* only 00 bytes */
                 );
 
                 n = file.read(buf, 0, buf.length);
                 assertThat(n).isEqualTo(buf.length);
                 assertThat(SffsTestUtil.hexdumpBrief(buf)).containsExactly(
-                        // FIXME: Data from null chunks must be overwritten with zero
-                        "00001380  00 00 00 00 00 00 00 00  61 00 00 00 00 00 00 00",
-                        "00003a90  00 00 00 00 00 00 00 00  62 00 00 00 00 00 00 00"
+                        /* only 00 bytes */
                 );
 
                 n = file.read(buf, 0, buf.length);
                 assertThat(n).isEqualTo(13313);
                 assertThat(SffsTestUtil.hexdumpBrief(Arrays.copyOf(buf, 13313))).containsExactly(
-                        // FIXME: Data from null chunks must be overwritten with zero
-                        "00001380  00 00 00 00 00 00 00 00  61 00 00 00 00 00 00 00",
                         "00003400  63"
                 );
             }
