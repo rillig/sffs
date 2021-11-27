@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.FileSystemException;
 import java.nio.file.Path;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -620,7 +621,7 @@ class FilesystemTest {
 
         try (var fs = new Filesystem(f, "rw")) {
             assertThatThrownBy(() -> fs.delete(Path.of("dir", "subdir")))
-                    .isInstanceOf(WrongTypeException.class)
+                    .isInstanceOf(FileSystemException.class)
                     .hasMessage("expected REGULAR, got DIRECTORY");
         }
 

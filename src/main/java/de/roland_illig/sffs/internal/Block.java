@@ -1,6 +1,7 @@
 package de.roland_illig.sffs.internal;
 
 import java.io.IOException;
+import java.nio.file.FileSystemException;
 
 final class Block {
 
@@ -84,7 +85,7 @@ final class Block {
 
     Block checkType(BlockType type) throws IOException {
         if (type != getType())
-            throw new WrongTypeException(type, getType());
+            throw new FileSystemException(null, null, "expected " + type + ", got " + getType());
         return this;
     }
 

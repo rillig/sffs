@@ -103,11 +103,7 @@ final class Filesystem implements de.roland_illig.sffs.Filesystem {
     public OpenFile open(Path file, String mode) throws IOException {
         var dir = lookup(file, -1);
         if (dir == null) throw fileNotFound(file);
-        try {
-            return dir.open(file, mode);
-        } catch (WrongTypeException e) {
-            throw new WrongTypeException(file, e);
-        }
+        return dir.open(file, mode);
     }
 
     @Override
