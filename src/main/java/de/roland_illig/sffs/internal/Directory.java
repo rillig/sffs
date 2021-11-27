@@ -49,7 +49,7 @@ final class Directory {
             if (nameRef == 0 && emptyPos == -1)
                 emptyPos = pos;
             if (name.equals(nameAtRef(nameRef)))
-                throw new FileAlreadyExistsException(dir.toString());
+                throw fileAlreadyExists(dir);
         }
 
         if (emptyPos == -1) {
@@ -107,13 +107,13 @@ final class Directory {
         for (int pos = 8, size = block.getSize(); pos < size; pos += 16) {
             var name = nameAtPos(pos);
             if (newName.equals(name))
-                throw new FileAlreadyExistsException(oldPath.resolveSibling(newName).toString());
+                throw fileAlreadyExists(oldPath.resolveSibling(newName));
             if (oldName.equals(name))
                 oldPos = pos;
         }
 
         if (oldPos == -1)
-            throw new FileNotFoundException(oldPath.toString());
+            throw fileNotFound(oldPath);
         var name = block.storage.allocateName(newName);
         block.ref(block.readRef(oldPos), BlockType.NAME).free();
         block.writeRef(oldPos, name);
@@ -126,7 +126,7 @@ final class Directory {
             if (nameRef == 0 && emptyPos == -1)
                 emptyPos = pos;
             if (name.equals(nameAtRef(nameRef)))
-                throw new FileAlreadyExistsException(path.toString());
+                throw fileAlreadyExists(path);
         }
 
         if (emptyPos == -1) {
@@ -152,7 +152,7 @@ final class Directory {
                 return new OpenFile(new RegularFile(block.ref(block.readRef(pos + 8))), mode);
         }
         if (mode.equals("r"))
-            throw new FileNotFoundException(file.toString());
+            throw fileNotFound(file);
 
         if (emptyPos == -1) {
             var enlarged = enlarge();
@@ -194,7 +194,7 @@ final class Directory {
                 return;
             }
         }
-        throw new FileNotFoundException(file.toString());
+        throw fileNotFound(file);
     }
 
     private Directory enlarge() throws IOException {
@@ -233,5 +233,13 @@ final class Directory {
     private String nameAtPos(int pos) throws IOException {
         var nameRef = block.readRef(pos);
         return nameRef != 0 ? new Name(block.ref(nameRef)).get() : null;
+    }
+
+    private static FileAlreadyExistsException fileAlreadyExists(Path path) {
+        return new FileAlreadyExistsException(path.toString());
+    }
+
+    private static FileNotFoundException fileNotFound(Path file) {
+        return new FileNotFoundException(file.toString());
     }
 }
