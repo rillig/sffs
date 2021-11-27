@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A directory consists of a reference to its parent directory, followed by the directory entries as (name, object).
@@ -27,6 +29,16 @@ final class Directory {
 
     void setParent(Block parent) throws IOException {
         block.writeRef(0, parent.checkType(BlockType.DIRECTORY));
+    }
+
+    List<String> readdir() throws IOException {
+        var names = new ArrayList<String>();
+        for (int pos = 8, size = block.getSize(); pos < size; pos += 16) {
+            var nameRef = block.readRef(pos);
+            if (nameRef != 0)
+                names.add(nameAtRef(nameRef));
+        }
+        return names;
     }
 
     void mkdir(Path dir) throws IOException {
@@ -162,6 +174,8 @@ final class Directory {
     }
 
     Directory lookupDir(String name) throws IOException {
+        if (name.equals(".")) return this;
+        if (name.equals("..")) return getParent();
         var entry = lookup(name);
         return entry != null ? new Directory(entry) : null;
     }

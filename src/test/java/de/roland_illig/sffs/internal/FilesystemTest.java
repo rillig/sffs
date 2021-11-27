@@ -714,4 +714,20 @@ class FilesystemTest {
                 "    nextFree 7"
         );
     }
+
+    @Test
+    void readdir(@TempDir File tmpdir) throws IOException {
+        var f = new File(tmpdir, "storage");
+
+        try (var fs = new Filesystem(f, "rw")) {
+            fs.mkdir(Path.of("first"));
+            fs.mkdir(Path.of("second"));
+            fs.open(Path.of("file"), "w").close();
+            fs.mkdir(Path.of("deleted"));
+            fs.rmdir(Path.of("deleted"));
+
+            assertThat(fs.readdir(Path.of(".")))
+                    .containsExactly("first", "second", "file");
+        }
+    }
 }

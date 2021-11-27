@@ -5,7 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.file.Path;
-import java.util.stream.Stream;
+import java.util.List;
 
 final class Filesystem implements de.roland_illig.sffs.Filesystem {
 
@@ -32,8 +32,11 @@ final class Filesystem implements de.roland_illig.sffs.Filesystem {
         d.removeMe(dir);
     }
 
-    Stream<DirectoryEntry> readdir(Path dir) {
-        throw new UnsupportedOperationException();
+    @Override
+    public List<String> readdir(Path dir) throws IOException {
+        var d = lookup(dir, 0);
+        if (d == null) throw fileNotFound(dir);
+        return d.readdir();
     }
 
     @Override

@@ -4,6 +4,7 @@ import de.roland_illig.sffs.internal.Api;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.List;
 
 public interface Filesystem extends AutoCloseable {
 
@@ -20,6 +21,8 @@ public interface Filesystem extends AutoCloseable {
     void mkdir(Path dir) throws IOException;
 
     void rmdir(Path dir) throws IOException;
+
+    List<String> readdir(Path dir) throws IOException;
 
     OpenFile open(Path file, String mode) throws IOException;
 
