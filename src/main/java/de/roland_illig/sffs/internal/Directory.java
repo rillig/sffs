@@ -23,7 +23,7 @@ final class Directory {
         return new Directory(block.ref(getParentRef()));
     }
 
-    long getParentRef() throws IOException {
+    private long getParentRef() throws IOException {
         return block.readRef(0);
     }
 
@@ -31,10 +31,50 @@ final class Directory {
         block.writeRef(0, parent.checkType(BlockType.DIRECTORY));
     }
 
+    private int getEntriesCount() throws IOException {
+        return (block.getSize() - 8) / 16;
+    }
+
+    private long getNameRef(int entry) throws IOException {
+        return block.readRef(8 + entry * 16);
+    }
+
+    private Block getName(int entry) throws IOException {
+        return block.ref(getNameRef(entry));
+    }
+
+    private String getNameString(int entry) throws IOException {
+        return new Name(getName(entry)).get();
+    }
+
+    private void setNameRef(int entry, long ref) throws IOException {
+        block.writeRef(8 + entry * 16, ref);
+    }
+
+    private void setName(int entry, Block name) throws IOException {
+        block.writeRef(8 + entry * 16, name);
+    }
+
+    private long getObjectRef(int entry) throws IOException {
+        return block.readRef(8 + entry * 16 + 8);
+    }
+
+    private Block getObject(int entry) throws IOException {
+        return block.ref(getObjectRef(entry));
+    }
+
+    private void setObjectRef(int entry, long ref) throws IOException {
+        block.writeRef(8 + entry * 16 + 8, ref);
+    }
+
+    private void setObject(int entry, Block obj) throws IOException {
+        block.writeRef(8 + entry * 16 + 8, obj);
+    }
+
     List<String> readdir() throws IOException {
         var names = new ArrayList<String>();
-        for (int pos = 8, size = block.getSize(); pos < size; pos += 16) {
-            var nameRef = block.readRef(pos);
+        for (int entry = 0, max = getEntriesCount(); entry < max; entry++) {
+            var nameRef = getNameRef(entry);
             if (nameRef != 0)
                 names.add(nameAtRef(nameRef));
         }
@@ -43,16 +83,16 @@ final class Directory {
 
     void mkdir(Path dir) throws IOException {
         var name = dir.getFileName().toString();
-        var emptyPos = -1;
-        for (int pos = 8, size = block.getSize(); pos < size; pos += 16) {
-            var nameRef = block.readRef(pos);
-            if (nameRef == 0 && emptyPos == -1)
-                emptyPos = pos;
+        var emptyEntry = -1;
+        for (int entry = 0, max = getEntriesCount(); entry < max; entry++) {
+            var nameRef = getNameRef(entry);
+            if (nameRef == 0 && emptyEntry == -1)
+                emptyEntry = entry;
             if (name.equals(nameAtRef(nameRef)))
                 throw fileAlreadyExists(dir);
         }
 
-        if (emptyPos == -1) {
+        if (emptyEntry == -1) {
             var enlarged = enlarge();
             enlarged.mkdir(dir);
             return;
@@ -60,25 +100,25 @@ final class Directory {
 
         var nameBlock = block.storage.allocateName(name);
         var dirBlock = block.storage.allocateDirectory(4, block.getRef());
-        block.writeRef(emptyPos, nameBlock);
-        block.writeRef(emptyPos + 8, dirBlock);
+        setName(emptyEntry, nameBlock);
+        setObject(emptyEntry, dirBlock);
     }
 
     /**
      * Remove this directory from its parent directory.
      */
     void removeMe(Path dir) throws IOException {
-        for (int pos = 8, size = block.getSize(); pos < size; pos += 16)
-            if (block.readRef(pos) != 0)
+        for (int entry = 0, max = getEntriesCount(); entry < max; entry++)
+            if (getNameRef(entry) != 0)
                 throw new DirectoryNotEmptyException(dir.toString());
 
-        var parent = new Directory(block.ref(block.readRef(0)));
-        for (int pos = 8, size = parent.block.getSize(); pos < size; pos += 16) {
-            if (parent.block.readRef(pos + 8) == block.getRef()) {
-                var nameRef = parent.block.readRef(pos);
+        var parent = getParent();
+        for (int entry = 0, max = parent.getEntriesCount(); entry < max; entry++) {
+            if (parent.getObjectRef(entry) == block.getRef()) {
+                var nameRef = parent.getNameRef(entry);
 
-                parent.block.writeRef(pos, 0);
-                parent.block.writeRef(pos + 8, 0);
+                parent.setNameRef(entry, 0);
+                parent.setObjectRef(entry, 0);
 
                 block.ref(nameRef, BlockType.NAME).free();
                 block.free();
@@ -91,85 +131,86 @@ final class Directory {
      * Remove the block from the directory entries, but don't free it.
      */
     void remove(Block obj) throws IOException {
-        for (int pos = 8, size = block.getSize(); pos < size; pos += 16) {
-            if (block.readRef(pos + 8) == obj.getRef()) {
-                block.ref(block.readRef(pos)).free();
-                block.writeRef(pos, 0);
-                block.writeRef(pos + 8, 0);
+        for (int entry = 0, max = getEntriesCount(); entry < max; entry++) {
+            if (getObjectRef(entry) == obj.getRef()) {
+                getName(entry).free();
+                setNameRef(entry, 0);
+                setObjectRef(entry, 0);
                 return;
             }
         }
     }
 
     void rename(Path oldPath, String newName) throws IOException {
-        var oldPos = -1;
+        var oldEntry = -1;
         var oldName = oldPath.getFileName().toString();
-        for (int pos = 8, size = block.getSize(); pos < size; pos += 16) {
-            var name = nameAtPos(pos);
+        for (int entry = 0, max = getEntriesCount(); entry < max; entry++) {
+            var name = getNameString(entry);
             if (newName.equals(name))
                 throw fileAlreadyExists(oldPath.resolveSibling(newName));
             if (oldName.equals(name))
-                oldPos = pos;
+                oldEntry = entry;
         }
 
-        if (oldPos == -1)
+        if (oldEntry == -1)
             throw fileNotFound(oldPath);
+
         var name = block.storage.allocateName(newName);
-        block.ref(block.readRef(oldPos), BlockType.NAME).free();
-        block.writeRef(oldPos, name);
+        getName(oldEntry).free();
+        setName(oldEntry, name);
     }
 
     Directory create(Path path, String name, Block obj) throws IOException {
-        var emptyPos = -1;
-        for (int pos = 8, size = block.getSize(); pos < size; pos += 16) {
-            var nameRef = block.readRef(pos);
-            if (nameRef == 0 && emptyPos == -1)
-                emptyPos = pos;
+        var emptyEntry = -1;
+        for (int entry = 0, max = getEntriesCount(); entry < max; entry++) {
+            var nameRef = getNameRef(entry);
+            if (nameRef == 0 && emptyEntry == -1)
+                emptyEntry = entry;
             if (name.equals(nameAtRef(nameRef)))
                 throw fileAlreadyExists(path);
         }
 
-        if (emptyPos == -1) {
+        if (emptyEntry == -1) {
             var enlarged = enlarge();
-            return enlarged.create(path, name, block);
+            return enlarged.create(path, name, block); // FIXME: must be 'obj' instead of 'block'
         }
 
         var nameBlock = block.storage.allocateName(name);
-        block.writeRef(emptyPos, nameBlock);
-        block.writeRef(emptyPos + 8, obj);
+        setName(emptyEntry, nameBlock);
+        setObject(emptyEntry, obj);
         return this;
     }
 
     OpenFile open(Path file, String mode) throws IOException {
         var name = file.getFileName().toString();
 
-        var emptyPos = -1;
-        for (int pos = 8, size = block.getSize(); pos < size; pos += 16) {
-            var nameRef = block.readRef(pos);
-            if (nameRef == 0 && emptyPos == -1)
-                emptyPos = pos;
+        var emptyEntry = -1;
+        for (int entry = 0, max = getEntriesCount(); entry < max; entry++) {
+            var nameRef = getNameRef(entry);
+            if (nameRef == 0 && emptyEntry == -1)
+                emptyEntry = entry;
             if (name.equals(nameAtRef(nameRef)))
-                return new OpenFile(new RegularFile(block.ref(block.readRef(pos + 8))), mode);
+                return new OpenFile(new RegularFile(getObject(entry)), mode);
         }
         if (mode.equals("r"))
             throw fileNotFound(file);
 
-        if (emptyPos == -1) {
+        if (emptyEntry == -1) {
             var enlarged = enlarge();
             return enlarged.open(file, mode);
         }
 
         var nameBlock = block.storage.allocateName(name);
         var fileBlock = block.storage.allocateFile();
-        block.writeRef(emptyPos, nameBlock);
-        block.writeRef(emptyPos + 8, fileBlock);
+        setName(emptyEntry, nameBlock);
+        setObject(emptyEntry, fileBlock);
         return new OpenFile(new RegularFile(fileBlock), mode);
     }
 
     Block lookup(String name) throws IOException {
-        for (int pos = 8, size = block.getSize(); pos < size; pos += 16)
-            if (name.equals(nameAtPos(pos)))
-                return block.ref(block.readRef(pos + 8));
+        for (int entry = 0, max = getEntriesCount(); entry < max; entry++)
+            if (name.equals(getNameString(entry)))
+                return getObject(entry);
         return null;
     }
 
@@ -182,13 +223,14 @@ final class Directory {
 
     void delete(Path file) throws IOException {
         var name = file.getFileName().toString();
-        for (int pos = 8, size = block.getSize(); pos < size; pos += 16) {
-            if (name.equals(nameAtPos(pos))) {
-                var obj = block.ref(block.readRef(pos + 8));
+        for (int entry = 0, max = getEntriesCount(); entry < max; entry++) {
+            if (name.equals(getNameString(entry))) {
+                var obj = getObject(entry);
                 var reg = new RegularFile(obj);
 
-                block.ref(block.readRef(pos)).free();
-                block.writeRef(pos, 0);
+                getName(entry).free();
+                setNameRef(entry, 0);
+                // FIXME: is setObjectRef(entry, 0) missing here?
 
                 reg.delete();
                 return;
@@ -204,14 +246,14 @@ final class Directory {
         block.readFully(8, entries, 0, entries.length);
         large.write(8, entries, 0, entries.length);
 
-        var parent = block.ref(getParentRef(), BlockType.DIRECTORY);
-        for (int pos = 8, size = parent.getSize(); pos < size; pos += 16) {
-            if (parent.readRef(pos + 8) == block.getRef())
-                parent.writeRef(pos + 8, large);
+        var parent = getParent();
+        for (int entry = 0, max = parent.getEntriesCount(); entry < max; entry++) {
+            if (parent.getObjectRef(entry) == block.getRef())
+                parent.setObject(entry, large);
         }
 
-        for (int pos = 8, size = block.getSize(); pos < size; pos += 16) {
-            var child = block.ref(block.readRef(pos + 8));
+        for (int entry = 0, max = parent.getEntriesCount(); entry < max; entry++) {
+            var child = getObject(entry);
             if (child.getType() == BlockType.DIRECTORY)
                 new Directory(child).setParent(large);
         }
@@ -228,11 +270,6 @@ final class Directory {
 
     private String nameAtRef(long nameRef) throws IOException {
         return new Name(block.ref(nameRef)).get();
-    }
-
-    private String nameAtPos(int pos) throws IOException {
-        var nameRef = block.readRef(pos);
-        return nameRef != 0 ? new Name(block.ref(nameRef)).get() : null;
     }
 
     private static FileAlreadyExistsException fileAlreadyExists(Path path) {
