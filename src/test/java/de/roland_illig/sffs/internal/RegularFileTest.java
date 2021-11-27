@@ -1,6 +1,7 @@
 package de.roland_illig.sffs.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.File;
 import java.io.IOException;
@@ -91,6 +92,57 @@ class RegularFileTest {
                 var n = file.read(buf, 0, buf.length);
                 assertThat(n).isEqualTo(1);
                 assertThat(buf[0]).isEqualTo((byte) 0x55);
+            }
+        }
+    }
+
+    @Test
+    void read_errors(@TempDir File tmpdir) throws IOException {
+        var f = new File(tmpdir, "storage");
+
+        try (var fs = new Filesystem(f, "rw")) {
+            try (var file = fs.open(Path.of("large"), "w")) {
+                var buf = new byte[]{0x55};
+                file.seek(100_000);
+                file.write(buf, 0, 1);
+            }
+
+            try (var file = fs.open(Path.of("large"), "r")) {
+                file.seek(-1);
+                assertThatThrownBy(() -> file.read(new byte[1], 0, 1))
+                        .isInstanceOf(IndexOutOfBoundsException.class)
+                        .hasMessageEndingWith(": -1");
+
+                file.seek(Integer.MAX_VALUE - 25);
+                // FIXME: Must be -1, not some large negative number.
+                assertThat(file.read(new byte[1], 0, 1)).isEqualTo(-2147383621);
+
+                // XXX: It feels somewhat arbitrary to limit the file offset to 24 below
+                //  Integer.MAX_VALUE. Why exactly 24, from an API point of view?
+                file.seek(Integer.MAX_VALUE - 24);
+                assertThatThrownBy(() -> file.read(new byte[1], 0, 1))
+                        .isInstanceOf(IndexOutOfBoundsException.class)
+                        .hasMessageEndingWith(": 2147483624");
+            }
+        }
+    }
+
+    /**
+     * @see java.io.InputStream#read(byte[], int, int)
+     */
+    @Test
+    void read_zero_bytes(@TempDir File tmpdir) throws IOException {
+        var f = new File(tmpdir, "storage");
+
+        try (var fs = new Filesystem(f, "rw")) {
+            try (var file = fs.open(Path.of("large"), "w")) {
+                var buf = new byte[]{0x55};
+                file.seek(100_000);
+                file.write(buf, 0, 1);
+            }
+
+            try (var file = fs.open(Path.of("large"), "r")) {
+                assertThat(file.read(new byte[1], 0, 0)).isEqualTo(0);
             }
         }
     }
