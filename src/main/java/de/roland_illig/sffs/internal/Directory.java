@@ -252,7 +252,7 @@ final class Directory {
                 parent.setObject(entry, large);
         }
 
-        for (int entry = 0, max = parent.getEntriesCount(); entry < max; entry++) {
+        for (int entry = 0, max = getEntriesCount(); entry < max; entry++) {
             var child = getObject(entry);
             if (child.getType() == BlockType.DIRECTORY)
                 new Directory(child).setParent(large);
