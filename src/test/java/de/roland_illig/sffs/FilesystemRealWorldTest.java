@@ -41,14 +41,12 @@ class FilesystemRealWorldTest {
         public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
             var result = skipHidden(dir);
             if (result == FileVisitResult.CONTINUE && !dir.equals(Path.of(".")))
-                fs.mkdir(dir.normalize());
+                fs.mkdir(dir);
             return result;
         }
 
         @Override
         public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-            file = file.normalize();
-
             try (var in = new FileInputStream(file.toFile())) {
                 try (var out = fs.open(file, "w")) {
                     int n;
@@ -76,7 +74,7 @@ class FilesystemRealWorldTest {
 
         @Override
         public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-            assertFilesEqual(file.normalize());
+            assertFilesEqual(file);
             return FileVisitResult.CONTINUE;
         }
 
@@ -108,7 +106,7 @@ class FilesystemRealWorldTest {
             return FileVisitResult.SKIP_SUBTREE;
 
         /* The directory build/test-results/test/binary gets modified during the test. */
-        if (dir.normalize().toString().equals("build"))
+        if (dir.equals(Path.of(".", "build")))
             return FileVisitResult.SKIP_SUBTREE;
 
         return FileVisitResult.CONTINUE;
