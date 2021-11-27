@@ -173,4 +173,61 @@ class RegularFileTest {
             }
         }
     }
+
+    /**
+     * This test demonstrates that when readLarge is called, the expected length to be read is already trimmed down
+     * to the remaining size of the file, therefore there can be no short reads in readLarge.
+     */
+    @Test
+    void write_large_buffer_to_large_file(@TempDir File tmpdir) throws IOException {
+        var f = new File(tmpdir, "storage");
+
+        try (var fs = new Filesystem(f, "rw")) {
+            try (var file = fs.open(Path.of("large"), "w")) {
+                var buf = new byte[17 * 1024];
+                buf[0] = 'a';
+                buf[buf.length - 1] = 'z';
+
+                file.seek(8000);
+                file.write(buf, 0, buf.length);
+            }
+
+            try (var file = fs.open(Path.of("large"), "r")) {
+                SffsTestUtil.assertTextDumpEquals(file,
+                        "0x00001f40  61 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00",
+                        "0x00006330  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 7A",
+                        "size 0x00006340"
+                );
+            }
+        }
+    }
+
+    @Test
+    void write_errors(@TempDir File tmpdir) throws IOException {
+        var f = new File(tmpdir, "storage");
+
+        try (var fs = new Filesystem(f, "rw")) {
+            try (var file = fs.open(Path.of("large"), "w")) {
+
+                file.seek(-1);
+                assertThatThrownBy(() -> file.write(new byte[1], 0, 1))
+                        .isInstanceOf(IndexOutOfBoundsException.class)
+                        .hasMessageEndingWith(": -1");
+
+                // This limit is due to an incomplete implementation of large files,
+                // it is not a conceptual limit.
+                file.seek(Integer.MAX_VALUE - 25);
+                assertThatThrownBy(() -> file.write(new byte[1], 0, 1))
+                        .isInstanceOf(IndexOutOfBoundsException.class)
+                        .hasMessageEndingWith(": 4194328");
+
+                // XXX: It feels somewhat arbitrary to limit the file offset to 24 below
+                //  Integer.MAX_VALUE. Why exactly 24, from an API point of view?
+                file.seek(Integer.MAX_VALUE - 24);
+                assertThatThrownBy(() -> file.write(new byte[1], 0, 1))
+                        .isInstanceOf(IndexOutOfBoundsException.class)
+                        .hasMessageEndingWith(": 2147483624");
+            }
+        }
+    }
 }
