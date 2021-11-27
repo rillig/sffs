@@ -21,14 +21,14 @@ final class Filesystem implements de.roland_illig.sffs.Filesystem {
     @Override
     public void mkdir(Path dir) throws IOException {
         var parent = lookup(dir, -1);
-        if (parent == null) throw new FileNotFoundException(dir.getParent().toString());
+        if (parent == null) throw fileNotFound(dir.getParent());
         parent.mkdir(dir);
     }
 
     @Override
     public void rmdir(Path dir) throws IOException {
         var d = lookup(dir, 0);
-        if (d == null) throw new FileNotFoundException(dir.toString());
+        if (d == null) throw fileNotFound(dir);
         d.removeMe(dir);
     }
 
@@ -42,7 +42,7 @@ final class Filesystem implements de.roland_illig.sffs.Filesystem {
     @Override
     public void rename(Path path, String newName) throws IOException {
         var dir = lookup(path, -1);
-        if (dir == null) throw new FileNotFoundException(path.toString());
+        if (dir == null) throw fileNotFound(path);
         dir.rename(path, newName);
     }
 
@@ -102,7 +102,7 @@ final class Filesystem implements de.roland_illig.sffs.Filesystem {
     @Override
     public OpenFile open(Path file, String mode) throws IOException {
         var dir = lookup(file, -1);
-        if (dir == null) throw new FileNotFoundException(file.toString());
+        if (dir == null) throw fileNotFound(file);
         try {
             return dir.open(file, mode);
         } catch (WrongTypeException e) {
