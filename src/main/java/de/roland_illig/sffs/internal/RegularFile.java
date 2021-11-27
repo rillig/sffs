@@ -82,42 +82,20 @@ final class RegularFile {
         var partOff = (int) (offset % chunkSize);
         var partLen = chunkSize - partOff;
 
-        var n1 = readFromChunk(chunkStartIndex, partOff, buf, off, partLen);
-        var totalRead = n1;
-        if (n1 < partLen)
-            return totalRead;
+        var totalRead = readFromChunk(chunkStartIndex, partOff, buf, off, partLen);
+        for (var i = chunkStartIndex + 1; i < chunkEndIndex; i++)
+            totalRead += readFromChunk(i, 0, buf, off + totalRead, chunkSize);
+        if (totalRead < len)
+            totalRead += readFromChunk(chunkEndIndex, 0, buf, off + totalRead, len - totalRead);
 
-        for (var i = chunkStartIndex + 1; i < chunkEndIndex; i++) {
-            var n2 = readFromChunk(i, 0, buf, off + totalRead, chunkSize);
-            totalRead += n2;
-            if (n2 < chunkSize)
-                return totalRead;
-        }
-
-        if (len != totalRead) {
-            var n3 = readFromChunk(chunkEndIndex, 0, buf, off + totalRead, len - totalRead);
-            totalRead += n3;
-        }
         return totalRead;
     }
 
     private int readFromChunk(int chunkIndex, int chunkOffset, byte[] buf, int off, int len) throws IOException {
-        try {
-            var chunk = getChunkForReading(chunkIndex);
-            if (chunk != null) return chunk.read(8 + chunkOffset, buf, off, len);
-            Arrays.fill(buf, off, off + len, (byte) 0);
-            return len;
-        } catch (IndexOutOfBoundsException e) {
-            /* ignore */
-        }
-
-        var fileOffset = chunkIndex * getChunkSize() + chunkOffset;
-        var fileSize = getSize();
-        if (fileOffset + len < fileSize)
-            return len;
-        if (fileOffset < fileSize)
-            return (int) (fileSize - fileOffset);
-        return 0;
+        var chunk = getChunkForReading(chunkIndex);
+        if (chunk != null) return chunk.read(8 + chunkOffset, buf, off, len);
+        Arrays.fill(buf, off, off + len, (byte) 0);
+        return len;
     }
 
     void write(long offset, byte[] buf, int off, int len) throws IOException {

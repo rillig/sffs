@@ -145,4 +145,32 @@ class RegularFileTest {
             }
         }
     }
+
+    /**
+     * This test demonstrates that when readLarge is called, the expected length to be read is already trimmed down
+     * to the remaining size of the file, therefore there can be no short reads in readLarge.
+     */
+    @Test
+    void readLarge_first_chunk_short(@TempDir File tmpdir) throws IOException {
+        var f = new File(tmpdir, "storage");
+
+        try (var fs = new Filesystem(f, "rw")) {
+            try (var file = fs.open(Path.of("large"), "w")) {
+                file.seek(8192);
+                file.write(new byte[]{'U'}, 0, 1);
+            }
+
+            try (var file = fs.open(Path.of("large"), "r")) {
+                var buf = new byte[8192];
+                buf[1] = 'Z';
+                file.seek(8192);
+
+                var n = file.read(buf, 0, buf.length);
+
+                assertThat(n).isEqualTo(1);
+                assertThat(buf[0]).isEqualTo((byte) 'U');
+                assertThat(buf[1]).isEqualTo((byte) 'Z');
+            }
+        }
+    }
 }
