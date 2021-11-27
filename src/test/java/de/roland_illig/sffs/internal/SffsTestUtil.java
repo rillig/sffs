@@ -30,6 +30,25 @@ class SffsTestUtil {
         return sb.toString();
     }
 
+    static ArrayList<String> hexdumpBrief(byte[] arr) {
+        var lines = new ArrayList<String>();
+        var zero = new byte[16];
+        var lastRowSize = arr.length % 16;
+        var fullEnd = arr.length - lastRowSize;
+        int off;
+
+        for (off = 0; off < fullEnd; off += 16)
+            if (!Arrays.equals(arr, off, off + 16, zero, 0, 16))
+                lines.add(String.format(Locale.ROOT, "%08x  %s",
+                        off, SffsTestUtil.hexdump(arr, off, 16)));
+
+        if (!Arrays.equals(arr, off, off + lastRowSize, zero, 0, lastRowSize))
+            lines.add(String.format(Locale.ROOT, "%08x  %s",
+                    off, SffsTestUtil.hexdump(arr, off, lastRowSize)));
+
+        return lines;
+    }
+
     static byte[] fromHexdump(String hex) {
         var baos = new ByteArrayOutputStream();
         for (int i = 0, len = hex.length(); i < len; ) {
