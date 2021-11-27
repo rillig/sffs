@@ -11,6 +11,7 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Arrays;
+import java.util.Random;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -21,20 +22,26 @@ class FilesystemRealWorldTest {
         var storage = new File(tmpdir, "storage");
 
         try (var fs = Filesystem.open(storage, "rw")) {
-            Files.walkFileTree(Path.of("."), new CopyIn(fs));
+            Files.walkFileTree(Path.of("."), new CopyIn(fs, Path.of(".")));
+            Files.walkFileTree(Path.of("."), new DeleteSome(fs));
+            Files.walkFileTree(Path.of("."), new CopyIn(fs, Path.of("newly-added")));
         }
 
         try (var fs = Filesystem.open(storage, "rw")) {
-            Files.walkFileTree(Path.of("."), new Verify(fs));
+            Files.walkFileTree(Path.of("."), new Verify(fs, Path.of("newly-added")));
         }
     }
 
     static class CopyIn extends SimpleFileVisitor<Path> {
         private final Filesystem fs;
+        private final Path destination;
         private final byte[] buf = new byte[4096];
 
-        CopyIn(Filesystem fs) {
+        CopyIn(Filesystem fs, Path destination) throws IOException {
             this.fs = fs;
+            this.destination = destination;
+            if (!destination.toString().equals("."))
+                fs.mkdir(destination);
         }
 
         @Override
@@ -48,7 +55,7 @@ class FilesystemRealWorldTest {
         @Override
         public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
             try (var in = new FileInputStream(file.toFile())) {
-                try (var out = fs.open(file, "w")) {
+                try (var out = fs.open(destination.resolve(file), "w")) {
                     int n;
                     while ((n = in.read(buf, 0, buf.length)) > 0)
                         out.write(buf, 0, n);
@@ -58,13 +65,36 @@ class FilesystemRealWorldTest {
         }
     }
 
+    static class DeleteSome extends SimpleFileVisitor<Path> {
+        private final Filesystem fs;
+        private final Random rnd = new Random(0);
+
+        DeleteSome(Filesystem fs) {
+            this.fs = fs;
+        }
+
+        @Override
+        public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
+            return skipHidden(dir);
+        }
+
+        @Override
+        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+            if (rnd.nextDouble() < 0.70)
+                fs.delete(file);
+            return FileVisitResult.CONTINUE;
+        }
+    }
+
     static class Verify extends SimpleFileVisitor<Path> {
         private final Filesystem fs;
+        private final Path root;
         private final byte[] outerBuf = new byte[4096];
         private final byte[] innerBuf = new byte[4096];
 
-        Verify(Filesystem fs) {
+        Verify(Filesystem fs, Path root) {
             this.fs = fs;
+            this.root = root;
         }
 
         @Override
@@ -80,7 +110,7 @@ class FilesystemRealWorldTest {
 
         private void assertFilesEqual(Path file) throws IOException {
             try (var outer = new FileInputStream(file.toFile())) {
-                try (var inner = fs.open(file, "r")) {
+                try (var inner = fs.open(root.resolve(file), "r")) {
                     while (true) {
                         int nOuter, nInner;
                         nOuter = outer.read(outerBuf, 0, outerBuf.length);
