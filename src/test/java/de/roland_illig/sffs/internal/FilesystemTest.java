@@ -583,6 +583,42 @@ class FilesystemTest {
     }
 
     @Test
+    void move_nonexistent(@TempDir File tmpdir) throws IOException {
+        var f = new File(tmpdir, "storage");
+
+        try (var fs = new Filesystem(f, "rw")) {
+            assertThatThrownBy(() -> fs.move(Path.of("nonexistent", "file"), Path.of("target", "file")))
+                    .isInstanceOf(FileNotFoundException.class)
+                    .hasMessage("nonexistent");
+
+            fs.mkdir(Path.of("source"));
+            fs.mkdir(Path.of("source", "directory"));
+
+            assertThatThrownBy(() -> fs.move(Path.of("source", "directory"), Path.of("target", "file")))
+                    .isInstanceOf(FileNotFoundException.class)
+                    .hasMessage(Path.of("target", "file").toString());
+        }
+
+        // There is no attempt of creating the directory "target".
+        SffsTestUtil.assertTextDumpEquals(f,
+                "block 0 type SUPER size 16",
+                "    root 2 firstFree 0",
+                "block 2 type DIRECTORY size 72",
+                "    parent 2",
+                "    entry 0 name 7 object 8",
+                "block 7 type NAME size 6",
+                "    source",
+                "block 8 type DIRECTORY size 72",
+                "    parent 2",
+                "    entry 0 name 13 object 15",
+                "block 13 type NAME size 9",
+                "    directory",
+                "block 15 type DIRECTORY size 72",
+                "    parent 8"
+        );
+    }
+
+    @Test
     void delete_nonexistent(@TempDir File tmpdir) throws IOException {
         var f = new File(tmpdir, "storage");
 
