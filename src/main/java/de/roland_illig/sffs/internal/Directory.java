@@ -208,6 +208,8 @@ final class Directory {
     }
 
     Block lookup(String name) throws IOException {
+        if (name.equals(".")) return this.block;
+        if (name.equals("..")) return getParent().block;
         for (int entry = 0, max = getEntriesCount(); entry < max; entry++)
             if (name.equals(getNameString(entry)))
                 return getObject(entry);
@@ -215,8 +217,6 @@ final class Directory {
     }
 
     Directory lookupDir(String name) throws IOException {
-        if (name.equals(".")) return this;
-        if (name.equals("..")) return getParent();
         var entry = lookup(name);
         return entry != null ? new Directory(entry) : null;
     }

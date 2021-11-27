@@ -546,11 +546,10 @@ class FilesystemTest {
 
         var before = Dumper.dump(f);
 
-        // TODO: Make it possible to reach the root directory by the name ".".
         try (var fs = new Filesystem(f, "rw")) {
             assertThatThrownBy(() -> fs.move(Path.of("."), Path.of("dir")))
-                    .isInstanceOf(FileNotFoundException.class)
-                    .hasMessage(".");
+                    .isInstanceOf(IOException.class)
+                    .hasMessage("cannot move '.' to its own child directory 'dir'");
         }
 
         assertThat(Dumper.dump(f)).isEqualTo(before);
