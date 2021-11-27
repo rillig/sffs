@@ -586,7 +586,13 @@ class FilesystemTest {
         var f = new File(tmpdir, "storage");
 
         try (var fs = new Filesystem(f, "rw")) {
-            assertThatThrownBy(() -> fs.move(Path.of("nonexistent", "file"), Path.of("target", "file")))
+            // source not found
+            assertThatThrownBy(() -> fs.move(Path.of("nonexistent"), Path.of("target")))
+                    .isInstanceOf(FileNotFoundException.class)
+                    .hasMessage("nonexistent");
+
+            // source directory not found
+            assertThatThrownBy(() -> fs.move(Path.of("nonexistent", "file"), Path.of("target")))
                     .isInstanceOf(FileNotFoundException.class)
                     .hasMessage("nonexistent");
 
