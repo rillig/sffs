@@ -107,6 +107,10 @@ class FilesystemRealWorldTest {
         if (name.startsWith("."))
             return FileVisitResult.SKIP_SUBTREE;
 
+        /* The directory build/test-results/test/binary gets modified during the test. */
+        if (dir.normalize().toString().equals("build"))
+            return FileVisitResult.SKIP_SUBTREE;
+
         return FileVisitResult.CONTINUE;
     }
 }
