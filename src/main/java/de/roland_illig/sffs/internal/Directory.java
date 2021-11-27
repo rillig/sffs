@@ -172,7 +172,7 @@ final class Directory {
 
         if (emptyEntry == -1) {
             var enlarged = enlarge();
-            return enlarged.create(path, name, block); // FIXME: must be 'obj' instead of 'block'
+            return enlarged.create(path, name, obj);
         }
 
         var nameBlock = block.storage.allocateName(name);

@@ -90,7 +90,7 @@ class DirectoryTest {
                 "    entry 0 name 7 object 8",
                 "    entry 2 name 19 object 20",
                 "    entry 3 name 25 object 26",
-                "    entry 4 name 40 object 2",
+                "    entry 4 name 40 object 14",
                 "block 40 type NAME size 1",
                 "    5"
         );
