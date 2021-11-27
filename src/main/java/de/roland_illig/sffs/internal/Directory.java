@@ -230,7 +230,7 @@ final class Directory {
 
                 getName(entry).free();
                 setNameRef(entry, 0);
-                // FIXME: is setObjectRef(entry, 0) missing here?
+                setObjectRef(entry, 0);
 
                 reg.delete();
                 return;

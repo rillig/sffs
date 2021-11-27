@@ -660,7 +660,6 @@ class FilesystemTest {
                 "    root 2 firstFree 7",
                 "block 2 type DIRECTORY size 72",
                 "    parent 2",
-                "00000008: error: nonempty directory entry 0",
                 "block 7 type FREE size 5",
                 "    nextFree 0"
         );
@@ -706,7 +705,6 @@ class FilesystemTest {
                 "    root 2 firstFree 8",
                 "block 2 type DIRECTORY size 72",
                 "    parent 2",
-                "00000008: error: nonempty directory entry 0",
                 "block 7 type FREE size 5",
                 "    nextFree 0",
                 "block 8 type FREE size 4096",
