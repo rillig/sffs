@@ -48,7 +48,7 @@ class FilesystemRealWorldTest {
         public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
             var result = skipHidden(dir);
             if (result == FileVisitResult.CONTINUE && !dir.equals(Path.of(".")))
-                fs.mkdir(dir);
+                fs.mkdir(destination.resolve(dir));
             return result;
         }
 
