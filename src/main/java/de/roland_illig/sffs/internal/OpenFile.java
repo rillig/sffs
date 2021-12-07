@@ -21,7 +21,7 @@ final class OpenFile implements de.roland_illig.sffs.OpenFile {
     OpenFile(RegularFile regularFile, String mode) throws IOException {
         this.regularFile = regularFile;
         this.canRead = mode.equals("r");
-        this.canWrite = mode.equals("w");
+        this.canWrite = mode.equals("w") || mode.equals("a");
         // TODO: register the open file in the filesystem
         if (this.canWrite)
             regularFile.setSize(0);
@@ -42,6 +42,12 @@ final class OpenFile implements de.roland_illig.sffs.OpenFile {
             throw new IOException("read-only");
         regularFile.write(offset, buf, off, len);
         offset += len;
+    }
+
+    @Override
+    public void append(byte[] buf, int off, int len) throws IOException {
+        offset = regularFile.getSize();
+        write(buf, off, len);
     }
 
     @Override

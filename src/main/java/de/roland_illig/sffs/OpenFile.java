@@ -7,6 +7,8 @@ public interface OpenFile extends AutoCloseable {
 
     void write(byte[] buf, int off, int len) throws IOException;
 
+    void append(byte[] buf, int i, int length) throws IOException;
+
     void seek(long offset);
 
     long tell();

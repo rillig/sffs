@@ -268,4 +268,28 @@ class RegularFileTest {
             }
         }
     }
+
+    @Test
+    void append(@TempDir File tmpdir) throws IOException {
+        var f = new File(tmpdir, "storage");
+        var path = Path.of("file");
+
+        try (var fs = new Filesystem(f, "rw")) {
+            try (var file = fs.open(path, "a")) {
+                var buf = new byte[1000];
+                buf[0] = '0';
+                file.append(buf, 0, buf.length);
+                buf[0] = '1';
+                file.append(buf, 0, buf.length);
+            }
+
+            try (var file = fs.open(path, "r")) {
+                SffsTestUtil.assertTextDumpEquals(file,
+                        "0x00000000  30 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00",
+                        "0x000003e0  00 00 00 00 00 00 00 00  31 00 00 00 00 00 00 00",
+                        "size 0x000007d0"
+                );
+            }
+        }
+    }
 }
