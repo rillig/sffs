@@ -18,11 +18,13 @@ final class OpenFile implements de.roland_illig.sffs.OpenFile {
 
     private long offset;
 
-    OpenFile(RegularFile regularFile, String mode) {
+    OpenFile(RegularFile regularFile, String mode) throws IOException {
         this.regularFile = regularFile;
         this.canRead = mode.equals("r");
         this.canWrite = mode.equals("w");
         // TODO: register the open file in the filesystem
+        if (this.canWrite)
+            regularFile.setSize(0);
     }
 
     @Override

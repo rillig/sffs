@@ -254,8 +254,7 @@ class RegularFileTest {
 
             try (var file = fs.open(path, "r")) {
                 var buf = new byte[1001];
-                // FIXME: must be truncated to 0
-                assertThat(file.read(buf, 0, buf.length)).isEqualTo(1000);
+                assertThat(file.read(buf, 0, buf.length)).isEqualTo(-1);
             }
 
             try (var file = fs.open(path, "w")) {
@@ -265,8 +264,7 @@ class RegularFileTest {
 
             try (var file = fs.open(path, "r")) {
                 var buf = new byte[1001];
-                // FIXME: must be truncated to 1
-                assertThat(file.read(buf, 0, buf.length)).isEqualTo(1000);
+                assertThat(file.read(buf, 0, buf.length)).isEqualTo(1);
             }
         }
     }
