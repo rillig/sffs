@@ -22,20 +22,20 @@ final class RegularFile {
         block.writeLong(0, size);
     }
 
-    int getChunkSize() throws IOException {
+    private int getChunkSize() throws IOException {
         return block.readInt(8);
     }
 
-    void setChunkSize(int chunkSize) throws IOException {
+    private void setChunkSize(int chunkSize) throws IOException {
         block.writeInt(8, chunkSize);
     }
 
-    Block getChunkForReading(int chunkIndex) throws IOException {
+    private Block getChunkForReading(int chunkIndex) throws IOException {
         var ref = block.readRef(chunkPos(chunkIndex));
         return ref != 0 ? block.ref(ref, BlockType.CHUNK) : null;
     }
 
-    Block getChunkForWriting(int chunkIndex) throws IOException {
+    private Block getChunkForWriting(int chunkIndex) throws IOException {
         var ref = block.readRef(chunkPos(chunkIndex));
         if (ref != 0) return block.ref(ref, BlockType.CHUNK);
         var block = this.block.storage.allocateChunk(getChunkSize());
@@ -47,7 +47,7 @@ final class RegularFile {
         return Math.addExact(24, Math.multiplyExact(chunkIndex, 8));
     }
 
-    void setChunk(int chunkIndex, Block chunk) throws IOException {
+    private void setChunk(int chunkIndex, Block chunk) throws IOException {
         block.writeRef(chunkPos(chunkIndex), chunk);
     }
 
