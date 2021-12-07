@@ -230,4 +230,43 @@ class RegularFileTest {
             }
         }
     }
+
+    /**
+     * Opening a file in write mode truncates it.
+     */
+    @Test
+    void write_after_read(@TempDir File tmpdir) throws IOException {
+        var f = new File(tmpdir, "storage");
+
+        try (var fs = new Filesystem(f, "rw")) {
+            try (var file = fs.open(Path.of("file"), "w")) {
+                var buf = new byte[1000];
+                file.write(buf, 0, buf.length);
+            }
+
+            try (var file = fs.open(Path.of("file"), "r")) {
+                var buf = new byte[1001];
+                assertThat(file.read(buf, 0, buf.length)).isEqualTo(1000);
+            }
+
+            fs.open(Path.of("large"), "w").close();
+
+            try (var file = fs.open(Path.of("file"), "r")) {
+                var buf = new byte[1001];
+                // FIXME: must be truncated to 0
+                assertThat(file.read(buf, 0, buf.length)).isEqualTo(1000);
+            }
+
+            try (var file = fs.open(Path.of("file"), "w")) {
+                var buf = new byte[1];
+                file.write(buf, 0, buf.length);
+            }
+
+            try (var file = fs.open(Path.of("file"), "r")) {
+                var buf = new byte[1001];
+                // FIXME: must be truncated to 1
+                assertThat(file.read(buf, 0, buf.length)).isEqualTo(1000);
+            }
+        }
+    }
 }
