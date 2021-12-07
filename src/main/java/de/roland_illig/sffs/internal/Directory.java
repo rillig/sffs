@@ -19,24 +19,40 @@ final class Directory {
         this.block = block.checkType(BlockType.DIRECTORY);
     }
 
+    private interface Offsets {
+        int PARENT = 0;
+
+        static int name(int entry) {
+            return 8 + entry * 16;
+        }
+
+        static int object(int entry) {
+            return 8 + entry * 16 + 8;
+        }
+
+        static int entries(int blockSize) {
+            return (blockSize - 8) / 16;
+        }
+    }
+
     Directory getParent() throws IOException {
         return new Directory(block.ref(getParentRef()));
     }
 
     private long getParentRef() throws IOException {
-        return block.readRef(0);
+        return block.readRef(Offsets.PARENT);
     }
 
     void setParent(Block parent) throws IOException {
-        block.writeRef(0, parent.checkType(BlockType.DIRECTORY));
+        block.writeRef(Offsets.PARENT, parent.checkType(BlockType.DIRECTORY));
     }
 
     private int getEntriesCount() throws IOException {
-        return (block.getSize() - 8) / 16;
+        return Offsets.entries(block.getSize());
     }
 
     private long getNameRef(int entry) throws IOException {
-        return block.readRef(8 + entry * 16);
+        return block.readRef(Offsets.name(entry));
     }
 
     private Block getName(int entry) throws IOException {
@@ -48,15 +64,15 @@ final class Directory {
     }
 
     private void setNameRef(int entry, long ref) throws IOException {
-        block.writeRef(8 + entry * 16, ref);
+        block.writeRef(Offsets.name(entry), ref);
     }
 
     private void setName(int entry, Block name) throws IOException {
-        block.writeRef(8 + entry * 16, name);
+        block.writeRef(Offsets.name(entry), name);
     }
 
     private long getObjectRef(int entry) throws IOException {
-        return block.readRef(8 + entry * 16 + 8);
+        return block.readRef(Offsets.object(entry));
     }
 
     private Block getObject(int entry) throws IOException {
@@ -64,11 +80,11 @@ final class Directory {
     }
 
     private void setObjectRef(int entry, long ref) throws IOException {
-        block.writeRef(8 + entry * 16 + 8, ref);
+        block.writeRef(Offsets.object(entry), ref);
     }
 
     private void setObject(int entry, Block obj) throws IOException {
-        block.writeRef(8 + entry * 16 + 8, obj);
+        block.writeRef(Offsets.object(entry), obj);
     }
 
     List<String> readdir() throws IOException {
