@@ -15,7 +15,7 @@ final class Superblock {
     }
 
     Directory getRootDirectory() throws IOException {
-        return new Directory(block.ref(getRootDirectoryRef()));
+        return new Directory(block.block(getRootDirectoryRef()));
     }
 
     long getRootDirectoryRef() throws IOException {

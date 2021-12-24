@@ -32,12 +32,12 @@ final class RegularFile {
 
     private Block getChunkForReading(int chunkIndex) throws IOException {
         var ref = block.readRef(chunkPos(chunkIndex));
-        return ref != 0 ? block.ref(ref, BlockType.CHUNK) : null;
+        return ref != 0 ? block.block(ref, BlockType.CHUNK) : null;
     }
 
     private Block getChunkForWriting(int chunkIndex) throws IOException {
         var ref = block.readRef(chunkPos(chunkIndex));
-        if (ref != 0) return block.ref(ref, BlockType.CHUNK);
+        if (ref != 0) return block.block(ref, BlockType.CHUNK);
         var block = this.block.storage.allocateChunk(getChunkSize());
         setChunk(chunkIndex, block);
         return block;
@@ -122,7 +122,7 @@ final class RegularFile {
         if (getChunkSize() != 0) {
             for (int pos = 24, size = block.getSize(); pos < size; pos += 8) {
                 var ref = block.readRef(pos);
-                if (ref != 0) block.ref(ref).free();
+                if (ref != 0) block.block(ref).free();
             }
         }
         block.free();

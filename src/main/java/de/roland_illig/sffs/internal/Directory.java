@@ -30,13 +30,13 @@ final class Directory {
             return 8 + entry * 16 + 8;
         }
 
-        static int entries(int blockSize) {
+        static int entriesCount(int blockSize) {
             return (blockSize - 8) / 16;
         }
     }
 
     Directory getParent() throws IOException {
-        return new Directory(block.ref(getParentRef()));
+        return new Directory(block.block(getParentRef()));
     }
 
     private long getParentRef() throws IOException {
@@ -48,7 +48,7 @@ final class Directory {
     }
 
     private int getEntriesCount() throws IOException {
-        return Offsets.entries(block.getSize());
+        return Offsets.entriesCount(block.getSize());
     }
 
     private long getNameRef(int entry) throws IOException {
@@ -56,7 +56,7 @@ final class Directory {
     }
 
     private Block getName(int entry) throws IOException {
-        return block.ref(getNameRef(entry));
+        return block.block(getNameRef(entry));
     }
 
     private String getNameString(int entry) throws IOException {
@@ -76,7 +76,7 @@ final class Directory {
     }
 
     private Block getObject(int entry) throws IOException {
-        return block.ref(getObjectRef(entry));
+        return block.block(getObjectRef(entry));
     }
 
     private void setObjectRef(int entry, long ref) throws IOException {
@@ -136,7 +136,7 @@ final class Directory {
                 parent.setNameRef(entry, 0);
                 parent.setObjectRef(entry, 0);
 
-                block.ref(nameRef, BlockType.NAME).free();
+                block.block(nameRef, BlockType.NAME).free();
                 block.free();
                 return;
             }
@@ -285,7 +285,7 @@ final class Directory {
     }
 
     private String nameAtRef(long nameRef) throws IOException {
-        return new Name(block.ref(nameRef)).get();
+        return new Name(block.block(nameRef)).get();
     }
 
     private static FileAlreadyExistsException fileAlreadyExists(Path path) {

@@ -2,6 +2,7 @@ package de.roland_illig.sffs.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.setMaxStackTraceElementsDisplayed;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -11,7 +12,6 @@ import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileSystemException;
 import java.nio.file.Path;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -23,7 +23,7 @@ class FilesystemTest {
     void setUp() {
         // JUnit 5 creates awfully long stack traces (around 100 elements),
         // and AssertJ strips off the uninteresting parts of it.
-        Assertions.setMaxStackTraceElementsDisplayed(200);
+        setMaxStackTraceElementsDisplayed(200);
     }
 
     @Test
@@ -127,10 +127,10 @@ class FilesystemTest {
     }
 
     /**
-     * Create several directories, so that the directory block needs to be resized.
+     * Create several directories, so that the directory block needs to be enlarged.
      */
     @Test
-    void mkdir_extend(@TempDir File tmpdir) throws IOException {
+    void mkdir_enlarge(@TempDir File tmpdir) throws IOException {
         var f = new File(tmpdir, "storage");
 
         try (var fs = new Filesystem(f, "rw")) {

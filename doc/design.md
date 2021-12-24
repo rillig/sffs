@@ -1,4 +1,4 @@
-# Single file filesystem
+# Single-file filesystem
 
 This is the specification for the single-file filesystem version 1 (sffs1).
 

@@ -40,7 +40,7 @@ class FilesystemRealWorldTest {
         CopyIn(Filesystem fs, Path destination) throws IOException {
             this.fs = fs;
             this.destination = destination;
-            if (!destination.toString().equals("."))
+            if (!destination.equals(Path.of(".")))
                 fs.mkdir(destination);
         }
 
@@ -80,7 +80,7 @@ class FilesystemRealWorldTest {
 
         @Override
         public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-            if (rnd.nextDouble() < 0.70)
+            if (rnd.nextInt(100) < 70)
                 fs.delete(file);
             return FileVisitResult.CONTINUE;
         }
@@ -109,17 +109,16 @@ class FilesystemRealWorldTest {
         }
 
         private void assertFilesEqual(Path file) throws IOException {
-            try (var outer = new FileInputStream(file.toFile())) {
-                try (var inner = fs.open(root.resolve(file), "r")) {
-                    while (true) {
-                        int nOuter, nInner;
-                        nOuter = outer.read(outerBuf, 0, outerBuf.length);
-                        nInner = inner.read(innerBuf, 0, innerBuf.length);
-                        assertThat(nInner).isEqualTo(nOuter);
-                        if (nOuter <= 0)
-                            break;
-                        assertThat(Arrays.copyOf(outerBuf, nOuter)).isEqualTo(Arrays.copyOf(innerBuf, nInner));
-                    }
+            try (var outer = new FileInputStream(file.toFile());
+                 var inner = fs.open(root.resolve(file), "r")) {
+                while (true) {
+                    int nOuter, nInner;
+                    nOuter = outer.read(outerBuf, 0, outerBuf.length);
+                    nInner = inner.read(innerBuf, 0, innerBuf.length);
+                    assertThat(nInner).isEqualTo(nOuter);
+                    if (nOuter < 0)
+                        break;
+                    assertThat(Arrays.copyOf(outerBuf, nOuter)).isEqualTo(Arrays.copyOf(innerBuf, nInner));
                 }
             } catch (IndexOutOfBoundsException e) {
                 throw new IllegalStateException(file.toString(), e);

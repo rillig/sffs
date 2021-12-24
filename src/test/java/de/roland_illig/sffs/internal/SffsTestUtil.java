@@ -85,7 +85,7 @@ class SffsTestUtil {
         assertThat(actual).containsExactly(expectedHexRows);
     }
 
-    static void dump(File f, String... hexRows) throws IOException {
+    static void writeHex(File f, String... hexRows) throws IOException {
         try (var fos = new FileOutputStream(f)) {
             try (var bos = new BufferedOutputStream(fos)) {
                 for (var row : hexRows) bos.write(fromHexdump(row));

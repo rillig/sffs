@@ -63,19 +63,19 @@ final class Block {
     }
 
     void writeRef(int pos, Block obj) throws IOException {
-        writeRef(pos, obj != null ? obj.offset / 16 : 0);
+        writeRef(pos, obj != null ? obj.getRef() : 0);
     }
 
     void writeRef(int pos, long ref) throws IOException {
         storage.writeRef(offset(pos, 8), ref);
     }
 
-    Block ref(long ref) throws IOException {
+    Block block(long ref) throws IOException {
         return new Block(storage, 16 * ref);
     }
 
-    Block ref(long ref, BlockType type) throws IOException {
-        return ref(ref).checkType(type);
+    Block block(long ref, BlockType type) throws IOException {
+        return block(ref).checkType(type);
     }
 
     private long offset(int pos, int len) throws IOException {
