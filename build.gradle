@@ -5,6 +5,10 @@ plugins {
 group 'de.roland_illig'
 version '1.0-SNAPSHOT'
 
+wrapper {
+    gradleVersion = '7.4.2'
+}
+
 repositories {
     mavenCentral()
 }
